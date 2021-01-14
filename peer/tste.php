@@ -2,12 +2,12 @@
 requireCap(CAP_SYSTEM);
 
 //session_start();
-include_once("peerutils.php");
-include_once("utils.php");
-//include_once("nav62.php");
+require_once("peerutils.php");
+require_once("utils.php");
+//require_once("nav62.php");
 //requireCap(CAP_SYSTEM);
-include_once("searchquery2.php");
-include_once("ste.php");
+require_once("searchquery2.php");
+require_once("ste.php");
 //ini_set('error_reporting',2047);
 //$style_color=0xC0E0FF;
 ?>
@@ -21,11 +21,11 @@ include_once("ste.php");
 <script type="text/javascript" language="JavaScript" src="js/helpers.js"></script>
 <?php
  //if ($am_user_blocked == 'J') {
- // include_once("blocked_tail.inc");
+ // require_once("blocked_tail.inc");
  // exit;
  //}
-global $PHP_SELF;
-$navTitle= "Prafda2 testscript ".$PHP_SELF." on DB ".$db_name;
+//global basename(__FILE__);
+$navTitle= "Prafda2 testscript ".basename(__FILE__)." on DB ".$db_name;
 ?>
 <title>
 <?php echo $navTitle; ?>
@@ -33,10 +33,10 @@ $navTitle= "Prafda2 testscript ".$PHP_SELF." on DB ".$db_name;
 </head>
 <body>
 <?php
-  //navstart($navTitle,$PHP_SELF);
+  //navstart($navTitle,basename(__FILE__));
 $ste = new SimpleTableEditor();
 $ste->setFormAction(basename(__FILE__));
-$ste->setRelation('student');
+$ste->setRelation('student_email');
 $ste->setMenuName('student');
 /* Neem de KeyColumns over uit het schema */
 $ste->setKeyColumns(array('snummer'));
@@ -47,7 +47,7 @@ $ste->setOrderList(array('achternaam','roepnaam','tussenvoegsel'));
 /* html template file */
 $ste->setFormTemplate('student.inc');
 /* we halen informatie uit deze relatie (tabel of view) erbij */
-$ste->setSupportingRelation('student');
+$ste->setSupportingRelation('student_email');
 /* die relatie moeten we er wel aan kunnen knopen */
 //$ste->setSupportingJoinList(array('PEOPLE_MANAGER'=>'MEDEWERKER_CODE'));
 /* Dit zie je in de zoeklijst */
@@ -68,7 +68,7 @@ $ste->processResponse();
 //	$ste->setValue("ACHTERNAAM","Stevens");
 //}
 $ste->generateHTML();
-echo '<br>student'.$ste->getValue('snummer');
+echo '<br>student_email'.$ste->getValue('snummer');
 /* kijk of mijn knop is uitgevoerd */
 //if (isSet($_POST['Splits'])){
   // echo '<br>knippen maar';

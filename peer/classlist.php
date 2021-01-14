@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_TUTOR);
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 include 'simplequerytable.php';
 require_once 'ClassSelectorClass.php';
 require_once 'SpreadSheetWriter.php';
@@ -38,7 +38,6 @@ $sqlhead1 = "select distinct snummer"
         . ",t.tutor as slb"
         //. ",country as nation,"
         . " ,rtrim(email1) as email1"
-        //. ",rtrim(email2) as email2,\n"
         . ",studieplan_short as studieplan"
         . ",sclass"
         //. "hoofdgrp ,\n"
@@ -56,10 +55,10 @@ $sqltail = " join student_class using(class_id) left join tutor t on (s.slb=t.us
 $fdate = date('Y-m-d');
 $filename = 'class_list_' . $faculty_short . '_' . $sclass . '-' . $fdate;
 
-$spreadSheetWriter = new SpreadSheetWriter($dbConn, $sqlhead1 . ' student s left join alt_email aem using(snummer) ' . $sqltail);
+$spreadSheetWriter = new SpreadSheetWriter($dbConn, $sqlhead1 . ' student_email s left join alt_email aem using(snummer) ' . $sqltail);
 
 $spreadSheetWriter->setTitle("Class list  $faculty_short $sclass $fdate")
-        ->setLinkUrl($server_url . $PHP_SELF . '?class_id=' . $class_id)
+        ->setLinkUrl($server_url . basename(__FILE__). '?class_id=' . $class_id)
         ->setFilename($filename)
         ->setAutoZebra(true);
 
@@ -67,7 +66,7 @@ $spreadSheetWriter->processRequest();
 $spreadSheetWidget = $spreadSheetWriter->getWidget();
 
 $sqlhead2 = "select distinct '<a href=''student_admin.php?snummer='||snummer||''' target=''_blank''>'||snummer||'</a>' as snummer,"
-        //. "'<img src='''||photo||''' style=''height:24px;width:auto;''/>' as foto,\n"
+          . "'<img src='''||photo||''' style=''height:24px;width:auto;''/>' as foto,\n"
         . "achternaam ,roepnaam, tussenvoegsel as tussenvoegsel," .
         "pcn,"
         . "lang,"
@@ -76,7 +75,6 @@ $sqlhead2 = "select distinct '<a href=''student_admin.php?snummer='||snummer||''
         //. "country as nation,"
         //. "gebdat as birth_date,"
         . "rtrim(email1) as email1,"
-        //. "rtrim(email2) as email2,\n" 
         . "studieplan_short as studieplan,"
         . "sclass,"
         //. "hoofdgrp,\n"
@@ -86,7 +84,7 @@ $sqlhead2 = "select distinct '<a href=''student_admin.php?snummer='||snummer||''
         . " from \n";
 $sql2 = $sqlhead2 . ' student_email s natural join portrait ' . $sqltail;
 //echo "<pre>{$sqlhead2}</pre>";
-$scripts = '<script type="text/javascript" src="js/jquery.js"></script>
+$scripts = '<script type="text/javascript" src="js/jquery.min.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
     <script type="text/javascript">                                         
       $(document).ready(function() {
@@ -100,7 +98,7 @@ $scripts = '<script type="text/javascript" src="js/jquery.js"></script>
 
 pagehead2('Get class list', $scripts);
 $page_opening = "Class list for class $faculty_short:$sclass ($class_id) ";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $maillisthead = strtolower($faculty_short) . '.' . strtolower($sclass);
 $known_maillist = '/home/maillists/' . $maillisthead . '.maillist';
@@ -112,13 +110,13 @@ if (file_exists($filename)) {
     $class_mail_address = "Existing class email address:&nbsp;<a href='mailto:$maillisthead@fontysvenlo.org'><tt style='fontsize:120%;color:#008;font-weight:bold'>"
             . "$maillisthead@fontysvenlo.org</tt></a> last update {$filetime}";
 }
-?>
-<?= $nav->show() ?>
+ $nav->show() ;
+         ?>
 <div id='navmain' style='padding:1em;'>
     <fieldset><legend>Select class</legend>
         <p>Choose the class of which you want to retrieve the data.</p>
-        <p>If you want to retrieve  it (named <i>"<?= $filename ?>"</i>) as a <strong>spread sheet</strong>, select the spreadsheet option below.</p>
-        <form method="get" name="project" action="<?= $PHP_SELF; ?>">
+        <p>If you want to retrieve the date as a <strong>spread sheet</strong>, select the spreadsheet option below.</p>
+        <form method="get" name="project" action="<?= basename(__FILE__); ?>">
             <?= $oldClassSelector ?>
             <input type='submit' name='get' value='Get class' />&nbsp;<?= $spreadSheetWidget ?>
         </form>

@@ -1,6 +1,6 @@
 <?php
 requireCap(CAP_EDIT_RIGHTS);
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'bitset.php';
 require_once 'studentpicker.php';
 $newsnummer=$peer_id;
@@ -94,10 +94,10 @@ $bitset_widget .=   "</table>";
 
 pagehead2('Edit capabilities');
 $page_opening="Set the capabilities of a peerweb user.";
-$nav=new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav=new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 echo $nav->show();
 
-include_once 'templates/editcapabilities.xhtml';
+require_once '../templates/editcapabilities.xhtml';
 ?>
 </body>
 </html>

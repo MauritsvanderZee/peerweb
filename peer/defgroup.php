@@ -1,8 +1,8 @@
 <?php
 requireCap(CAP_TUTOR);
 
-include_once('peerutils.php');
-include_once('navigation2.php');
+require_once('peerutils.php');
+require_once('navigation2.php');
 require_once('prjMilestoneSelector2.php');
 require_once('classMultiSelector.php');
 
@@ -17,8 +17,10 @@ $milestone = 1;
 $class_ids = array();
 $prjSel = new PrjMilestoneSelector2($dbConn, $peer_id, $prjm_id);
 $prjSel->setWhere('valid_until > now()::date')
-        ->setExtraInfo("<span style='color:#800'>"
-                . "<p>Note that you can only select <a href='alterproject.php'>project</a>s which have a <b>valid until</b> date in the future.</p></span><br/>");
+        ->setExtraInfo("<strong>"
+                . "<p>Note that you can only select "
+                . "<a href='alterproject.php'>project</a>s "
+                . "which have a <b>valid until</b> date that is in the future.</p></strong><br/>");
 
 extract($prjSel->getSelectedData());
 $_SESSION['prj_id'] = $prj_id;
@@ -27,7 +29,7 @@ $_SESSION['milestone'] = $milestone;
 
 if (isSet($_SESSION['prjm_id'])) {
     $sql = "select distinct class_id,cl.sclass as sclass \n" .
-            "from prj_grp join student using (snummer) join prj_tutor using(prjtg_id)\n" .
+            "from prj_grp join student_email using (snummer) join prj_tutor using(prjtg_id)\n" .
             "  join student_class cl using(class_id)\n" .
             "where prjm_id=$prjm_id\n" .
             " order by sclass,class_id asc";
@@ -78,7 +80,7 @@ if (isSet($_POST['bsubmit'])) {
         $sql = "begin work;\n"
                 . "delete from prj_grp where prjtg_id in (select prjtg_id from prj_tutor where prjm_id=$prjm_id) \n"
                 . " and (snummer not in\n"
-                . "(select snummer from student where class_id in ($sstudent_classet))) and\n"
+                . "(select snummer from student_email where class_id in ($sstudent_classet))) and\n"
                 . "(snummer not in (select snummer from fixed_student2 where prjm_id=$prjm_id ));\n"
                 . "commit";
         //		echo "<br/>sql=$sql<br/>";
@@ -100,7 +102,7 @@ if (isSet($_POST['bsubmit'])) {
     }
 
     // get current set and then compute intersection
-    $sql = "select distinct class_id from student \n" .
+    $sql = "select distinct class_id from student_email \n" .
             "where snummer in (select snummer from prj_grp join prj_tutor using(prjtg_id) where " .
             "prjm_id=$prjm_id)";
     //    echo "<br/>sql=$sql<br/>";
@@ -139,7 +141,7 @@ if (isSet($_POST['bsubmit'])) {
             $sql .= "insert into prj_grp (snummer, prjtg_id)\n"
                     . "select snummer, pt.prjtg_id \n"
                     . "from ( select max(prjtg_id) as prjtg_id from prj_tutor where prjm_id=$prjm_id)  pt cross join \n"
-                    . " ( select snummer from student where class_id in ($toAdd))  sc where \n"
+                    . " ( select snummer from student_email where class_id in ($toAdd))  sc where \n"
                     . " sc.snummer not in (select snummer from prj_grp pg join prj_tutor using(prjtg_id) where prjm_id=$prjm_id)\n";
 
             $dbConn->log("sql=$sql");
@@ -161,8 +163,8 @@ if (isSet($_POST['bsubmit'])) {
 $prj_id = isSet($_SESSION['prj_id']) ? $_SESSION['prj_id'] : -1;
 extract(getTutorOwnerData($dbConn, $prj_id), EXTR_PREFIX_ALL, 'ot');
 $_SESSION['prj_id'] = $prj_id = $ot_prj_id;
-$isTutorOwner = ($ot_tutor == $tutor_code);
-if ($isTutorOwner) {
+
+if ($ot_userid === $peer_id) {
     $submit_button = '<button name=\'bsubmit\' value=\'submit\'>Submit</button>';
 } else {
     $submit_button = '';
@@ -173,7 +175,7 @@ extract($resultSet->fields);
 $page = new PageContainer();
 $page->setTitle('Select participating student_class');
 $page_opening = "Select the student_class of the participating students";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $page->addBodyComponent($nav);
 $resultSet = $dbConn->Execute("select afko,description from project where prj_id=$prj_id");
 extract($resultSet->fields);
@@ -183,8 +185,8 @@ $prjSel->setJoin(" (select distinct prjm_id from prj_milestone natural join proj
 
 $form1Form->addText($prjSel->getWidget());
 
-
-$form2Form = new HtmlContainer("<form method='post' name='group_def' action='$PHP_SELF'>");
+$self=basename(__FILE__);
+$form2Form = new HtmlContainer("<form method='post' name='group_def' action='$self'>");
 
 //$form2Form->addText( "Legend:class name [class size]<br/>\n" );
 $sql = "select distinct rtrim(student_class.sclass) as sclass,class_id,sort1,sort2,sort_order,\n" .
@@ -213,9 +215,9 @@ $page->addBodyComponent($form2Fieldset);
 
 $page->addBodyComponent(new Component('<!-- db_name=$db_name $Id: defgroup.php 1829 2014-12-28 19:40:37Z hom $ -->'));
 $page->addHeadText('
-<link type="text/css" href="css/pepper-grinder/jquery-ui-1.8.17.custom.css" rel="stylesheet" />	
-<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
+<link type="text/css" href="js/jquery-ui-custom/jquery-ui.css" rel="stylesheet" />	
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-custom/jquery-ui.min.js"></script>
   <script>
 	$(function() {
 		$( "#tabs" ).tabs();

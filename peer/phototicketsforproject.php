@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_TUTOR);
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 include 'simplequerytable.php';
 require_once 'prjMilestoneSelector2.php';
 require_once 'SpreadSheetWriter.php';
@@ -32,7 +32,6 @@ $sqltail = "achternaam||rtrim(coalesce(', '||tussenvoegsel,'')) as achternaam ,r
         . ",role"
         . ",slb.tutor as slb"
         . ",rtrim(email1) as email1"
-        //. ",rtrim(email2) as email2"
         . ",c.sclass as klas"
         . ",afko"
         . ",milestone"
@@ -44,7 +43,7 @@ $sqltail = "achternaam||rtrim(coalesce(', '||tussenvoegsel,'')) as achternaam ,r
         . ",apt.grp_name"
         . ",apt.tutor"
         . ",'' as grade\n"
-        . "from prj_grp pg join student s using (snummer)\n"
+        . "from prj_grp pg join student_email s using (snummer)\n"
         . " join all_prj_tutor apt on(pg.prjtg_id=apt.prjtg_id)\n"
         . "left join studieplan sp using(studieplan)\n"
         . "left join student_class c using (class_id)\n"
@@ -59,7 +58,7 @@ $sqltail = "achternaam||rtrim(coalesce(', '||tussenvoegsel,'')) as achternaam ,r
 $spreadSheetWriter = new SpreadSheetWriter($dbConn, $sqlhead . $sqltail);
 
 $spreadSheetWriter->setFilename($filename)
-        ->setLinkUrl($server_url . $PHP_SELF . '?prjm_id=' . $prjm_id)
+        ->setLinkUrl($root_url . basename(__FILE__) . '?prjm_id=' . $prjm_id)
         ->setTitle($title)
         ->setAutoZebra(false)
         ->setColorChangerColumn(16);
@@ -72,7 +71,7 @@ $sqlhead = "select distinct '<a href=\"student_admin.php?snummer='||s.snummer||'
 
 $rainbow = new RainBow(STARTCOLOR, COLORINCREMENT_RED, COLORINCREMENT_GREEN, COLORINCREMENT_BLUE);
 
-/* $scripts = '<script type="text/javascript" src="js/jquery.js"></script> */
+/* $scripts = '<script type="text/javascript" src="js/jquery.min.js"></script> */
 /*     <script src="js/jquery.tablesorter.js"></script> */
 /*     <script type="text/javascript"> */
 /*       $(document).ready(function() { */
@@ -85,7 +84,7 @@ $rainbow = new RainBow(STARTCOLOR, COLORINCREMENT_RED, COLORINCREMENT_GREEN, COL
 /* '; */
 pagehead2('Phototicker for project');
 $page_opening = "Photo tickets for project $afko $description <span style='font-size:8pt;'>prjm_id $prjm_id prj_id $prj_id milestone $milestone </span>";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 
 $prjSel->setJoin('milestone_grp using (prj_id,milestone)');
@@ -107,7 +106,7 @@ if ($resultSet === false) {
     }
 }
 
-$scripts = '<script type="text/javascript" src="js/jquery.js"></script>
+$scripts = '<script type="text/javascript" src="js/jquery.min.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
@@ -121,7 +120,7 @@ $nav->show()
 ?>
 <div id='navmain' style='padding:1em;'>
     <fieldset><legend>Select project</legend>
-        <form method="get" name="project" action="<?= $PHP_SELF; ?>">
+        <form method="get" name="project" action="<?= basename(__FILE__); ?>">
             <?= $prj_id_selector ?>
             <input type='submit' name='get' value='Get' />
             <?= $spreadSheetWidget ?>

@@ -1,8 +1,8 @@
 <?php
 requireCap(CAP_SYSTEM);
   /* $Id: reverseView.php 1825 2014-12-27 14:57:05Z hom $ */
-include_once('tutorhelper.php');
-include_once 'navigation2.php';
+require_once('tutorhelper.php');
+require_once 'navigation2.php';
 require_once 'GroupPhoto.class.php';
 require_once 'studentPrjMilestoneSelector.php';
 $prj_id=1;
@@ -27,7 +27,7 @@ $script=
 $lang='nl';
 //echo "$user<br/>\n";
 
-$sql="select * from student where snummer=$judge";
+$sql="select * from student_email where snummer=$judge";
 $resultSet=$dbConn->Execute($sql);
 if ($resultSet === false) {
     print "error fetching judge data with $sql : ".$dbConn->ErrorMsg()."<br/>\n";
@@ -60,7 +60,7 @@ function validateGrade(el) {
   return true;
 }
 </script>");
-$nav=new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav=new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $nav->addLeftNavText(file_get_contents('news.html'));
 ob_start();
@@ -155,7 +155,7 @@ if ($grp_open && isSet($_POST['peerdata'])) {
 	  }
 	  // and mail tutor
 	  $sql="select  email1 as email,roepnaam,achternaam,tussenvoegsel,afko,description,grp_num \n".
-	    "from tutor join student on(userid=snummer) join prj_tutor using(tutor) \n".
+	    "from tutor join student_email on(userid=snummer) join prj_tutor using(tutor) \n".
 	    "join project using(prj_id) \n".
 	    "where prjtg_id=$prjtg_id";
 	  $resultSet=$dbConn->Execute($sql);
@@ -181,11 +181,11 @@ if ($grp_open && isSet($_POST['peerdata'])) {
 	    //	    $dbConn->log("email $body");
 	  }
 	  // and mail other members
-	  $sql ="select roepnaam,tussenvoegsel,achternaam,email1,email2 from student left join alt_email using(snummer)\n".
+	  $sql ="select roepnaam,tussenvoegsel,achternaam,email1 from student_email left join alt_email using(snummer)\n".
 	    " join prj_grp using (snummer) where prj_id=$prj_id and milestone=$milestone and grp_num='$grp_num'";
 	  $resultSet=$dbConn->Execute($sql);
 	  if ($resultSet === false) {
-	    print 'error getting student email data for closing prj_grp with $sql '.$dbConn->ErrorMsg().'<BR>';
+	    print 'error getting student_email email data for closing prj_grp with $sql '.$dbConn->ErrorMsg().'<BR>';
 	  } else {
 	    $sroepnaam ='';
 	    $to ='';
@@ -195,9 +195,6 @@ if ($grp_open && isSet($_POST['peerdata'])) {
 	      $sroepnaam .= $continue .trim($roepnaam);
 	      $to .= $continue . trim($email1);
 	      $continue =', ';
-	      if (isSet($email2)) {
-		$to .= $continue . trim($email2);
-	      }
 	      $resultSet->moveNext();
 	    }
 	    $subject="The assessment is complete for project $afko group $grp_num milestone $milestone";
@@ -246,7 +243,7 @@ if ($grp_open ) $gradetype=$langmap['gradetype'][$lang];
 <fieldset class="control">
 <legend>Assessment form</legend>
 <h2 align='center'>Assessment for <?=$afko?> <?=$year?> <?=$description?> <br/>group <?=$grp_num?> (<?=$grp_alias?>)</h2>
-<form method="post" name="assessment "action="<?=$PHP_SELF?>">
+<form method="post" name="assessment "action="<?=basename(__FILE__)?>">
 <h4 align='center'><?=$gradetype?></h4>
 <?php
     //    echo "post 6 prj_id_milestone = $prj_id:$milestone<br/>"; 
@@ -275,12 +272,12 @@ if ($grp_open) {
 }
 ?>
 <?php
-
+$self=basename(__FILE__);
 if ($isTutor) {
   $tutor_opener="<fieldset style='background:#fff'>
 	<legend>For tutors</legend>
 	If you are a tutor you could use this page and the next to enter a participant's data, or just simply assume any participant's role.
-	  <form name='reopenform' method='post' action='$PHP_SELF'>
+	  <form name='reopenform' method='post' action='$self'>
 	  <input type='hidden' name='prjtg_id' value='$prjtg_id'/>
 	  <input type='hidden' name='judge' value='$judge'/>
           To let this person of a group correct his or her values, re-open the assessment for the group by clicking this button.

@@ -2,8 +2,8 @@
 /* $Id: iresult.php 1825 2014-12-27 14:57:05Z hom $ */
 //session_start();
 requireCap(CAP_DEFAULT);
-include_once('tutorhelper.php');
-include_once 'navigation2.php';
+require_once('tutorhelper.php');
+require_once 'navigation2.php';
 require_once 'studentPrjMilestoneSelector.php';
 $groupgrade = 7;
 // some defaults to prevent script faults
@@ -32,7 +32,7 @@ if ( isSet( $_REQUEST['groupgrade'] ) ) {
     }
 }
 $sql = "SELECT roepnaam, tussenvoegsel,achternaam,coalesce(lang,'EN') as lang \n"
-        . "FROM student WHERE snummer=$snummer";
+        . "FROM student_email WHERE snummer=$snummer";
 $resultSet = $dbConn->Execute( $sql );
 if ( $resultSet === false ) {
     die( 'Error: ' . $dbConn->ErrorMsg() . ' with ' . $sql );
@@ -63,7 +63,7 @@ $pp['alias']=$grp_alias;
 $page_opening = "Participant $roepnaam $tussenvoegsel $achternaam ($snummer)";
 $page = new PageContainer();
 $page->setTitle( 'Individual result' );
-$nav = new Navigation( $tutor_navtable, basename( $PHP_SELF ), $page_opening );
+$nav = new Navigation( $tutor_navtable, basename( __FILE__ ), $page_opening );
 $nav->setInterestMap( $tabInterestCount );
 
 $nav->addLeftNavText( file_get_contents( 'news.html' ) );
@@ -74,7 +74,7 @@ $page->addBodyComponent( $nav );
 $lazyCount = 0;
 $lazyjudges = '';
 $sqlx = "select distinct roepnaam||coalesce(' '||tussenvoegsel,'')||' '||achternaam as naam,achternaam,prjtg_id\n" .
-        "from student join judge_notready using(snummer)\n" .
+        "from student_email join judge_notready using(snummer)\n" .
         "join prj_tutor using(prjtg_id)\n" .
         "where prjtg_id=$prjtg_id order by achternaam,naam";
 $resultSet = $dbConn->Execute( $sqlx );
@@ -89,7 +89,7 @@ while ( !$resultSet->EOF ) {
 }
 $sql = "select roepnaam||' '||coalesce(tussenvoegsel,'')||' '||achternaam as name,\n" .
         " student_class.sclass as class\n" .
-        " from student join prj_grp using(snummer) \n" .
+        " from student_email join prj_grp using(snummer) \n" .
         "join student_class using (class_id)\n" .
         "join all_prj_tutor using(prjtg_id)\n" .
         "where prjtg_id=$prjtg_id \n" .
@@ -101,11 +101,12 @@ if ( $resultSet === false ) {
 $pp['fellowTable'] = getQueryToTableChecked( $dbConn, $sql, true, 1,
         new RainBow( 0x46B4B4, 64, 32, 0 ), 7, '', 0 );
 $pp['formOrNop']='';
+$self=basename(__FILE__);
 if ( $lazyCount > 0 ) {
     $pp['formOrNop']= "<br/>" . $langmap['niet zover'][$lang] . ": \n<table>" . $lazyjudges . "</table>\n";
 } else {
     $rainbow = new RainBow( STARTCOLOR, COLORINCREMENT_RED, COLORINCREMENT_GREEN, COLORINCREMENT_BLUE );
-    $pp['formOrNop']= "<form action='$PHP_SELF' name='recalc' method='get'>\n".
+    $pp['formOrNop']= "<form action='$self' name='recalc' method='get'>\n".
     getIndividualResultTable( $dbConn, $lang, $prjtg_id, $snummer, $groupgrade,
             $rainbow )."\n</form>\n"
             ."<table><tr><td>"
@@ -114,7 +115,7 @@ if ( $lazyCount > 0 ) {
             .$langmap['columnnorights'][$lang]
             ."</td></tr></table>\n";
 }
-$page->addHtmlFragment( 'templates/iresult.html' , $pp );
+$page->addHtmlFragment( '../templates/iresult.html' , $pp );
 
 $page->show();
 ?>

@@ -1,6 +1,6 @@
 <?php
 requireCap(CAP_TUTOR);
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'simplequerytable.php';
 require_once 'prjMilestoneSelector2.php';
 require_once 'pgrowparser.php';
@@ -57,7 +57,7 @@ $sql = "select s.snummer,achternaam,roepnaam,tussenvoegsel,gebdat,grp_num,coales
         . " from  \n"
         . " prj_grp \n "
         . " join all_prj_tutor using(prjtg_id) \n"
-        . " join student s using(snummer)\n "
+        . " join student_email s using(snummer)\n "
         . "left join ($sql2) ags using(prjtg_id,snummer)\n"
         . " left join milestone_grade mg using(snummer,prjm_id) left join transaction using(trans_id)\n"
         . " where prjm_id=$prjm_id order by grp_num,achternaam";
@@ -65,7 +65,7 @@ $sql = "select s.snummer,achternaam,roepnaam,tussenvoegsel,gebdat,grp_num,coales
 $spreadSheetWriter = new SpreadSheetWriter( $dbConn, $sql );
 $title = "Results for all peer assessment groups in project $afko $year milestone $milestone";
 $spreadSheetWriter->setFilename( $filename )
-        ->setLinkUrl( $server_url . $PHP_SELF )
+        ->setLinkUrl( $root_url . basename(__FILE__) )
         ->setTitle( $title )
         ->setColorChangerColumn( 5 )
         ->setRowParser( new RowWithArraysParser() );
@@ -78,12 +78,12 @@ $page = new PageContainer();
 $page->setTitle( 'All group tables' );
 $page_opening = "Group peer assessment results for all groups of project $afko $description "
         . "<span style='font-size:8pt;'>prjm_id $prjm_id prj_id $prj_id milestone $milestone </span>";
-$nav = new Navigation( $tutor_navtable, basename( $PHP_SELF ), $page_opening );
+$nav = new Navigation( $tutor_navtable, basename( __FILE__ ), $page_opening );
 $nav->setInterestMap( $tabInterestCount );
 
 $rainbow = new RainBow();
 $pp['rtable'] = getQueryToTableChecked( $dbConn, $sql, false, 5, $rainbow, -1, '', '' );
 $page->addBodyComponent( $nav );
-$page->addHtmlFragment('templates/allgroupresult.html', $pp);
+$page->addHtmlFragment('../templates/allgroupresult.html', $pp);
 $page->show();
 ?>

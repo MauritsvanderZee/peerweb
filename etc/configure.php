@@ -4,20 +4,21 @@
 // do not change anything below this line
 //
 
-
+$pg_port=5432;
 require_once "{$etc_dir}/settings.php";
 $rubberbase = "{$site_home}/rubberreports";
 $site_dir = $site_home . '/peer'; // the dir on the server
 // IF CLOSED file exists, exit after showing sign
 if (is_file($site_dir . '/CLOSED')) {
-    require_once 'templates/loginclosed.html';
+    require_once '../templates/loginclosed.html';
     exit;
 }
 
 $include_path = ini_get('include_path');
-$include_path = $site_home . '/peerlib:' . $include_path . ':/usr/share/php/PHPExcel/';
+$include_path = $site_home . '/peerlib:' . $include_path .':'. $site_home.'/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/';
 $include_path = ini_set('include_path', $include_path);
 $subversionscriptdir = "{$site_home}/subversion";
+require_once $site_home.'/vendor/autoload.php';
 define('ADODB_ASSOC_CASE', 2);
 define('STYLEFILE', $root_url . '/style/peertreestyle.css');
 define('SITEROOT', $root_url);
@@ -28,6 +29,10 @@ switch ($bgstyle) {
     case 'osirix':
         $body_background = 'background:#def url(images/osirix.png)';
         $body_class = 'osirix';
+        break;
+    case 'staging':
+        $body_background = 'background:#def url(images/staging.png)';
+        $body_class = 'staging';
         break;
     case 'test':
         $body_background = 'background:#cfc url(images/test.png)';

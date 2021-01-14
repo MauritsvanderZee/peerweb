@@ -2,28 +2,26 @@
 requireCap(CAP_SYSTEM);
 
 $debug=0;
-include_once('peerutils.php');
+require_once('peerutils.php');
 require_once('validators.php');
 require_once('component.php');
 require_once 'TemplateWith.php';
 ini_set('error_reporting',(E_ALL & ~E_NOTICE) );
 extract($_SESSION);
 $sql="select roepnaam||' '||coalesce(tussenvoegsel||' ','')||' '||achternaam as line1,snummer \n".
- "from student where snummer=$peer_id";
+ "from student_email where snummer=$peer_id";
 $resultSet=$dbConn->Execute($sql);
 extract($resultSet->fields);
 $line2='Your Function';
 $line3='Your company';
 $line1width = 200;
 $line2width = 200;
-$line2width = 200;
 $line1height = 30;
 $line2height = 30;
-$line2height = 30;
 if (isSet($_POST['line1'])) {
-    $line1 = $_POST['line1'];
-    $line2 = $_POST['line2'];
-    $line3 = $_POST['line3'];
+    $line1 = validate($_POST['line1'],'anything','Hello');
+    $line2 = validate($_POST['line2'],'anything','Hello');
+    $line3 = validate($_POST['line3'],'anything','Hello');
     $line1width = validate($_POST['line1width'],'integer',200);
     $line2width = validate($_POST['line2width'],'integer',200);
     $line2width = validate($_POST['line2width'],'integer',200);
@@ -68,6 +66,7 @@ $page = new PageContainer();
 $page->setTitle('Create your own Table Card');
 $form1 = new HtmlContainer("<div id='main'>");
 $templatefile='tablecard.html';
+$self= basename(__FILE__);
 $template_text= file_get_contents($templatefile, true);
 if ($template_text === false ) {
   $form1->addText("<strong>cannot read template file $templatefile</strong>");

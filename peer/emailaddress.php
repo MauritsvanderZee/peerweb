@@ -1,8 +1,8 @@
 <?php
 /* $Id: emailaddress.php 1792 2014-09-15 11:51:29Z hom $ */
 requireCap(CAP_DEFAULT);
-include_once('tutorhelper.php');
-include_once 'navigation2.php';
+require_once('tutorhelper.php');
+require_once 'navigation2.php';
 
 function checkEmail($adr) {
     if (preg_match("/^\w+(\w|\-|\.)*\@[a-zA-Z0-9][a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/", $adr)) {
@@ -14,8 +14,8 @@ function checkEmail($adr) {
 }
 
 //$snummer=$peer_id; // this page is always personal
-$sql = "select snummer,roepnaam,tussenvoegsel,achternaam,email1,email2 \n" .
-        "from student left join alt_email using(snummer) where snummer=$snummer";
+$sql = "select snummer,roepnaam,tussenvoegsel,achternaam,email1 \n" .
+        "from student_email left join alt_email using(snummer) where snummer=$snummer";
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet === false) {
     die('Error: ' . $dbConn->ErrorMsg() . ' with ' . $sql);
@@ -28,7 +28,7 @@ $page = new PageContainer();
 $page->setTitle('Personal settings');
 //$page->addHeadComponent(new HtmlContainer("<script id='tasktimerstarter' type='text/javascript'>"));
 
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 
 //$nav->addLeftNavText(file_get_contents('news.html'));
 ob_start();
@@ -38,39 +38,6 @@ $page->addBodyComponent(new Component(ob_get_clean()));
 $page->addBodyComponent($nav);
 //ob_start();
 //echo "<pre>";print_r($_POST);echo "</pre>";
-if (isSet($_POST['email2']) || isSet($_POST['email3'])) {
-    $email2 = trim($_POST['email2']);
-    $email3 = trim($_POST['email3']);
-    if ($email2 == '' && $email3 == '') {
-        $sql = "delete from alt_email where snummer=$snummer";
-        $resultSet = $dbConn->Execute($sql);
-        if ($resultSet === false) {
-            echo "cannot adapt email address with $sql, error " . $dbConn->ErrorMsg();
-        }
-    } else if (checkEmail($email2) || checkEmail($email3)) {
-
-        if ($email2)
-            $email2_is = '\'' . $email2 . '\'';
-        else
-            $email2_is = 'null';
-        if ($email3)
-            $email3_is = '\'' . $email3 . '\'';
-        else
-            $email3_is = 'null';
-
-        $sql = "select email2,email3 from alt_email where snummer=$snummer";
-        $resultSet = $dbConn->Execute($sql);
-        if ($resultSet->EOF) {
-            $sql = "insert into alt_email (snummer,email2,email3) values($snummer,$email2_is,$email3_is)";
-        } else {
-            $sql = "update alt_email set email2=$email2_is,email3=$email3_is where snummer=$snummer";
-        }
-        $resultSet = $dbConn->Execute($sql);
-        if ($resultSet === false) {
-            echo "cannot adapt email address with $sql, error " . $dbConn->ErrorMsg();
-        }
-    }
-}
 if (isSet($_POST['lpi_id']) && preg_match('/^LPI\d{9}$/ ', $_POST['lpi_id'])) {
 
     $sql = "select snummer from lpi_id where snummer=$snummer";
@@ -110,7 +77,7 @@ if (isSet($_POST['github_id']) && preg_match('/^(\w|-)+$/ ', $_POST['github_id']
 
 if (false && isSet($_POST['bsubmit_student_data'])) {
     $snummer_student_data = validate($_POST['snummer_student_data'], 'snummer', $snummer);
-    $sql = "select * from student where snummer=$snummer_student_data";
+    $sql = "select * from student_email where snummer=$snummer_student_data";
     $resultSet = $dbConn->Execute($sql);
     if ($resultSet === false) {
         echo "cannot fetch student date with $sql, error " . $dbConn->ErrorMsg();
@@ -127,7 +94,7 @@ if (false && isSet($_POST['bsubmit_student_data'])) {
         $phone_postaddress = 'null';
     else
         $phone_postaddress = '\'' . $phone_postaddress . '\'';
-    $sqlhead = "update student set phone_home='{$phone_home}', phone_gsm=${phone_gsm},\n" .
+    $sqlhead = "update student_email set phone_home='{$phone_home}', phone_gsm=${phone_gsm},\n" .
             "phone_postaddress=${phone_postaddress}\n";
     $sqltail = "where snummer={$snummer_student_data};";
     if (isSet($_POST['straat'])) {
@@ -185,7 +152,7 @@ if (false && isSet($_POST['bsubmit_student_data'])) {
     $sql2 = ";\n";
     if (isSet($_POST['student_class_id'])) {
         $student_class_id = trim($_POST['student_class_id']);
-        $sql2 .= "update student set class_id='$student_class_id' where snummer=$snummer_student_data\n";
+        $sql2 .= "update _email set class_id='$student_class_id' where snummer=$snummer_student_data\n";
     }
 
     $sql = $sqlhead . $sqltail . $sql2 . ";\ncommit";
@@ -209,7 +176,7 @@ $sql = "select s.snummer,rtrim(s.achternaam) as achternaam,\n"
     . " left join github_id gi on(gi.snummer=s.snummer) "
     . " left join sebi_stick stick  on (s.snummer=stick.snummer) "
     . " left join additional_course_descr acd on(s.snummer=acd.snummer) "
-    . "left join lpi_id lid on(s.snummer=lid.snummer) left join student slb on(slb.snummer=s.slb) where s.snummer=$snummer";
+    . "left join lpi_id lid on(s.snummer=lid.snummer) left join student_email slb on(slb.snummer=s.slb) where s.snummer=$snummer";
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet === false) {
     echo "cannot read email address with<pre>$sql</pre>, error " . $dbConn->ErrorMsg();
@@ -270,7 +237,7 @@ if (hasCap(CAP_ALTER_STUDENT)) {
     $hoofdgrp = "<select name='hoofdgrp'>" .
             getOptionListGrouped($dbConn, "select distinct rtrim(hoofdgrp) as name,\n" .
                     "rtrim(hoofdgrp) as value,f.faculty_short as namegrp\n" .
-                    " from student s left join \n" .
+                    " from student_email s left join \n" .
                     "student_class c on (hoofdgrp=sclass) " .
                     "join faculty f on(c.faculty_id=f.faculty_id) \n" .
                     "order by namegrp,name,value ", $hoofdgrp) .
@@ -286,12 +253,10 @@ ob_start();
 ?>
 <div style='padding:1em'>
     <fieldset><legend>These email addresses will be used for notifications</legend>
-        <form name='email' method='post' action='<?= $PHP_SELF ?>'>
+        <form name='email' method='post' action='<?= basename(__FILE__) ?>'>
             <table summary='email address'>
                 <tr><th colspan='2'>Email addresses:</th></tr>
                 <tr><th  align='right'>Fontys email address </th><td><?= $email1 ?></td><td>&nbsp;</td></tr>
-                <tr><th  align='right'>Second email address </th><td><input type='text' size='64' name='email2' value='<?= $email2 ?>'/></td></tr>
-                <tr><th  align='right'>Third email address </th><td><input type='text' size='64' name='email3' value='<?= $email3 ?>'/></td></tr>
                 <tr><th  align='right'>Linux Prof Inst. id LPI_ID</th><td><?= $lpi_id_field ?>(Used for Linux Professional Institute certificates LPI-101 etc.)</td></tr>
                 <tr><th align='right'>Github ID</th><td><?= $github_id_field ?>(Used for sem 7 ESD course.)</td></tr>
     <tr><th align='right'>Sebi Stick Number</th><td><b><?= $sebi_stick ?></b>&nbsp;(You Exam preparation and exercise stick.)</td></tr>
@@ -302,7 +267,7 @@ ob_start();
             By entering an empty line here (erasing the current value) you delete that current entry.
         </p>
     </fieldset>
-<?php include 'templates/student.html' ?>
+<?php include '../templates/student.html' ?>
 </div>
 <!-- db_name=<?= $db_name ?> -->
 <?php

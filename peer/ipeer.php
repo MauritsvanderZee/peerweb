@@ -2,9 +2,10 @@
 /* $Id: ipeer.php 1825 2014-12-27 14:57:05Z hom $ */
 requireCap(CAP_DEFAULT);
 require_once 'groupassessmenttable.php';
-include_once 'navigation2.php';
+require_once 'navigation2.php';
 require_once 'GroupPhoto.class.php';
 require_once 'studentPrjMilestoneSelector.php';
+require_once('tutorhelper.php');
 
 $prj_id = 1;
 $milestone = 1;
@@ -27,7 +28,7 @@ $replyText = '';
 $script = $lang = 'nl';
 //echo "$user<br/>\n";
 
-$sql = "select * from student where snummer=$judge";
+$sql = "select * from student_email where snummer=$judge";
 $resultSet = $dbConn->Execute( $sql );
 if ( $resultSet === false ) {
     print "error fetching judge data with $sql : " . $dbConn->ErrorMsg() . "<br/>\n";
@@ -62,7 +63,7 @@ function validateGrade(el) {
   return true;
 }
 </script>" );
-$nav = new Navigation( $tutor_navtable, basename( $PHP_SELF ), $page_opening );
+$nav = new Navigation( $tutor_navtable, basename( __FILE__ ), $page_opening );
 ob_start();
 tutorHelper( $dbConn, $isTutor );
 $page->addBodyComponent( new Component( ob_get_clean() ) );
@@ -171,7 +172,7 @@ SQL;
             // and mail tutor
             $q = <<<'SQL'
 select  email1 as email,roepnaam,achternaam,tussenvoegsel,afko,description,grp_num
-from tutor t join student s on(t.userid=s.snummer) join prj_tutor pt on(pt.tutor_id=t.userid)
+from tutor t join student_email s on(t.userid=s.snummer) join prj_tutor pt on(pt.tutor_id=t.userid)
 join prj_milestone using(prjm_id)
 join project using(prj_id)
 where prjtg_id=$1
@@ -199,8 +200,8 @@ SQL;
             }
             $q =
 <<<'SQL'
-select roepnaam,tussenvoegsel,achternaam,email1,email2,prjm_id 
-from student
+select roepnaam,tussenvoegsel,achternaam,email1,prjm_id 
+from student_email
 left join alt_email using(snummer)
 join prj_grp using (snummer)
 join prj_tutor using(prjtg_id)
@@ -209,7 +210,7 @@ where prjtg_id=$1
 SQL;
             $resultSet = $dbConn->Prepare($q)->execute($prjtg_id);
             if ( $resultSet === false ) {
-                print 'error getting student email data for closing prj_grp with $sql ' . $dbConn->ErrorMsg() . '<BR>';
+                print 'error getting student_email email data for closing prj_grp with $sql ' . $dbConn->ErrorMsg() . '<BR>';
             } else {
                 $sroepnaam = '';
                 $to = '';
@@ -219,9 +220,6 @@ SQL;
                     $sroepnaam .= $continue . trim( $roepnaam );
                     $to .= $continue . trim( $email1 );
                     $continue = ', ';
-//                    if (isSet($email2)) {
-//                        $to .= $continue . trim($email2);
-//                    }
                     $resultSet->moveNext();
                 }
                 $subject = "The assessment is complete for project $afko group $grp_num milestone $milestone";
@@ -267,11 +265,12 @@ $pg->setPictSize( '84', '126' );
 $pg->setMaxCol( 8 );
 $criteria = getCriteria( $prjm_id );
 $rainbow = new RainBow( STARTCOLOR, COLORINCREMENT_RED, COLORINCREMENT_GREEN, COLORINCREMENT_BLUE );
+$self=basename(__FILE__);
 if ( $isTutor ) {
     $tutor_opener = "<fieldset style='background:#fff'>
 	<legend>For tutors</legend>
 	If you are a tutor you could use this page and the next to enter a participant's data, or just simply assume any participant's role.
-	  <form name='reopenform' method='post' action='$PHP_SELF'>
+	  <form name='reopenform' method='post' action='$self'>
 	  <input type='hidden' name='prjtg_id' value='$prjtg_id'/>
 	  <input type='hidden' name='judge' value='$judge'/>
           To let this person of a group correct his or her values, re-open the assessment for the group by clicking this button.
@@ -283,14 +282,13 @@ if ( $isTutor ) {
 }
 
 if ( isSet( $prjtg_id ) ) {
-    $q =
-<<<"SQL"
+    $q =<<<'SQL'
             SELECT ca.contestant,roepnaam||coalesce(' '||tussenvoegsel,'')||' '||achternaam||coalesce(' ('||role||')','') as naam ,ca.prj_id,
             grp_num,criterium,milestone,grade,coalesce(remark,'') as remark from contestant_assessment ca
              left join student_role sr on(ca.prjm_id=sr.prjm_id and ca.contestant=sr.snummer)
              left join project_roles pr on(ca.prj_id=pr.prj_id and sr.rolenum=pr.rolenum)
              natural left join assessment_remarks ar
-            where ca.judge=\$1 and ca.prjtg_id=\$2
+            where ca.judge=$1 and ca.prjtg_id=$2
             order by achternaam,contestant,criterium
 SQL;
             $rs=$dbConn->Prepare($q)->execute(array($judge,$prjtg_id));
@@ -328,7 +326,7 @@ if ( !$prjSel->isEmptySelector() ) {
                     group <?= $grp_num ?> (<?= $grp_alias ?>)
                     <br/>for Student <?= $student_data ?>
                 </h2>
-                <form method="post" name="assessment" action="<?= $PHP_SELF ?>" onsubmit="return confirm('Are you sure you want to submit these data?')">
+                <form method="post" name="assessment" action="<?= basename(__FILE__) ?>" onsubmit="return confirm('Are you sure you want to submit these data?')">
                     <h4 ><?= $gradetype ?></h4>
     <?= $pg->getGroupPhotos() ?>
                     <table align='center' class='navleft'>

@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_SYSTEM);
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 
 include 'simplequerytable.php';
 require_once 'classSelector.php';
@@ -34,8 +34,8 @@ $fdate = date('Y-m-d');
 $sqlhead = "select distinct snummer,"
         . "achternaam||rtrim(coalesce(', '||tussenvoegsel,'')::text) as achternaam ,roepnaam, "
         . "pcn,gebdat as birth_date,t.tutor as slb,rtrim(email1) as email1,"
-        . "studieplan_short as studieplan,course_short as opleiding,hoofdgrp ,sclass,\n"
-        . "straat,huisnr,plaats,phone_gsm,phone_home\n"
+        . "studieplan_short as studieplan,course_short as opleiding,hoofdgrp ,sclass\n"
+//        . ",straat,huisnr,plaats,phone_gsm,phone_home\n"
         . "from \n";
 $sqltail = " join student_class using(class_id) left join tutor t on (s.slb=t.userid)\n"
         . " left join studieplan using(studieplan)\n"
@@ -43,13 +43,13 @@ $sqltail = " join student_class using(class_id) left join tutor t on (s.slb=t.us
         . " left join faculty f on(f.faculty_id=s.faculty_id)\n"
         . "where hoofdgrp='$hoofdgrp' order by achternaam,roepnaam\n";
 
-$spreadSheetWriter = new SpreadSheetWriter($dbConn, $sqlhead . ' student s ' . $sqltail);
+$spreadSheetWriter = new SpreadSheetWriter($dbConn, $sqlhead . ' student_email s ' . $sqltail);
 
 $filename = 'hoofdgrp_list_' . $faculty_short . '_' . $hoofdgrp . '-' . date('Y-m-d');
-
+$self=basename(__FILE__);
 $spreadSheetWriter->setFilename($filename)
         ->setTitle("Hoofd groep list  $faculty_short $hoofdgrp $fdate")
-        ->setLinkUrl("{$server_url}{$PHP_SELF}?hoofdgrp={$hoofdgrp}")
+        ->setLinkUrl("{$server_url}/{$self}?hoofdgrp={$hoofdgrp}")
         ->setFilename($filename)
         ->setAutoZebra(true);
 
@@ -60,12 +60,12 @@ $sqlhead = "select distinct '<a href=''student_admin.php?snummer='||snummer||'''
         . "'<img src='''||photo||''' style=''height:24px;width:auto;''/>' as foto,\n"
         . "achternaam||rtrim(coalesce(', '||tussenvoegsel,'')::text) as achternaam ,roepnaam, \n"
         . "pcn,cohort,t.tutor as slb,gebdat as birth_date,rtrim(email1) as email1,\n"
-        . "studieplan_short as studieplan,faculty_short as facul,course_short as opleiding,sclass,hoofdgrp,\n"
-        . "straat,huisnr,plaats,phone_gsm,phone_home\n"
+        . "studieplan_short as studieplan,faculty_short as facul,course_short as opleiding,sclass,hoofdgrp\n"
+//        . ",straat,huisnr,plaats,phone_gsm,phone_home\n"
         . " from \n";
 $sql2 = $sqlhead . ' student_email s natural join portrait ' . $sqltail;
 //$dbConn->log($sql2);
-$scripts = '<script type="text/javascript" src="js/jquery.js"></script>
+$scripts = '<script type="text/javascript" src="js/jquery.min.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
     <script type="text/javascript">                                         
       $(document).ready(function() {
@@ -77,11 +77,11 @@ $scripts = '<script type="text/javascript" src="js/jquery.js"></script>
 ';
 
 $cardsLink=
-      "<a href='classtablecards.php?rel=student&hoofdgrp={$hoofdgrp}'>table cards for students with  hoofdgrp</a>";
+      "<a href='classtablecards.php?rel=student_email&hoofdgrp={$hoofdgrp}'>table cards for students with  hoofdgrp</a>";
 
 pagehead2('list students by a hoofgrp', $scripts);
 $page_opening = "Hoofdgrp  list $faculty_short:$hoofdgrp ";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 ?>
 <?= $nav->show() ?>
@@ -91,7 +91,7 @@ $nav->setInterestMap($tabInterestCount);
             Typically it is used to label students in course type and year or semester.</p>
 
         <p>If you want to retrieve  it (named <?= $filename ?>) as a <strong>spread sheet</strong>, select the spreadsheet option below.</p>
-        <form method="get" name="project" action="<?= $PHP_SELF; ?>">
+        <form method="get" name="project" action="<?= basename(__FILE__); ?>">
             <?= $oldClassSelector ?>
             <input type='submit' name='get' value='Get hoofdgrp' />&nbsp;<?= $spreadSheetWidget ?>
         </form>

@@ -17,7 +17,7 @@ $uploadResult = '';
 function validateStudents($dbConn, &$uploadResult) {
 
     $query = "select snummer,grp_num from importer.worksheet w where not exists\n"
-            . " (select 1 from student where snummer=w.snummer) order by grp_num,snummer";
+            . " (select 1 from student_email where snummer=w.snummer) order by grp_num,snummer";
     $resultSet = $dbConn->Execute($query);
     $valid = true;
     if ($resultSet === FALSE) {
@@ -69,7 +69,7 @@ if (isSet($_FILES['userfile']['name']) && ( $_FILES['userfile']['name'] != '' ) 
                     . "insert into prj_grp (snummer,prjtg_id) \n"
                     . "select snummer, prjtg_id from g join importer.worksheet using(grp_num) returning *)\n "
                     . " select snummer,achternaam,roepnaam,grp_num,tutor,sclass as klas \n" .
-                    " from members join prj_tutor using (prjtg_id) join student using(snummer) join tutor on (tutor_id=userid)\n "
+                    " from members join prj_tutor using (prjtg_id) join student_email using(snummer) join tutor on (tutor_id=userid)\n "
                     . " join student_class using(class_id)\n"
                     . " order by grp_num, achternaam,roepnaam";
             //$uploadResult .= "<fieldset><pre>{$query}</pre></fieldset>";
@@ -86,9 +86,9 @@ if (isSet($_FILES['userfile']['name']) && ( $_FILES['userfile']['name'] != '' ) 
 
 
 $prjSel = new PrjMilestoneSelector2($dbConn, $peer_id, $prjm_id);
-$prjSel->setWhere("valid_until > now()::date and owner_id={$peer_id}"
-        . " and exists (select 1 from prj_tutor where prjm_id=pm.prjm_id)"
-        . "and not exists (select 1 from prj_grp join prj_tutor using(prjtg_id) where prjm_id=pm.prjm_id)");
+// $prjSel->setWhere("valid_until > now()::date and owner_id={$peer_id}"
+//         . " and exists (select 1 from prj_tutor where prjm_id=pm.prjm_id)"
+//         . "and not exists (select 1 from prj_grp join prj_tutor using(prjtg_id) where prjm_id=pm.prjm_id)");
 
 extract($prjSel->getSelectedData());
 $_SESSION['prj_id'] = $prj_id;
@@ -102,7 +102,7 @@ $nav->setInterestMap($tabInterestCount);
 $action = $PHP_SELF;
 $page->addBodyComponent($nav);
 $prjList = $prjSel->getSelector();
-$templatefile = 'templates/importgroups.html';
+$templatefile = '../templates/importgroups.html';
 $template_text = file_get_contents($templatefile, true);
 if ($template_text === false) {
     $page->addBodyComponent(new Component("<strong>cannot read template file $templatefile</strong>"));

@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_TUTOR);
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'ClassSelectorClass.php';
 
 define('MAXROW', '4');
@@ -16,7 +16,7 @@ if (isSet($_REQUEST['slb'])) {
 extract($_SESSION);
 $slb_info = "";
 $slb_sql = "select roepnaam||coalesce(' '||tussenvoegsel||' ',' ')||achternaam||' ('||tutor||':'||userid||')' as slb_info\n"
-        . " from tutor join student on (student.snummer=tutor.userid) where userid=$slb";
+        . " from tutor join student_email  s on (s.snummer=tutor.userid) where userid=$slb";
 $resultSet = $dbConn->Execute($slb_sql);
 //echo "<pre>{$slb_sql}</pre>";
 if (!$resultSet->EOF) {
@@ -42,7 +42,7 @@ $oldClassSelector = $classSelectorClass->setAutoSubmit(true)->addConstraint('sor
 
 
 $page_opening = "Pupil  photos for {$slb_info}";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $sql = "SELECT distinct st.snummer as number," .
         "st.roepnaam||' '||coalesce(regexp_replace(st.tussenvoegsel,'''','&rsquo;')||' ','')||st.achternaam as name,\n" .
@@ -60,7 +60,7 @@ $sql = "SELECT distinct st.snummer as number," .
 //$dbConn->log($sql);
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet === false) {
-    die("<br>Cannot get student data with \"" . $sql . '", cause ' . $dbConn->ErrorMsg() . "<br>");
+    die("<br>Cannot get student_email data with \"" . $sql . '", cause ' . $dbConn->ErrorMsg() . "<br>");
 }
 $sql_slb = "select mine,namegrp,name,userid as value from tutor_selector($peer_id) \n"
         . "order by mine,namegrp,name";
@@ -69,7 +69,7 @@ $slbList = "<select name='slb'>\n" . getOptionListGrouped($dbConn, $sql_slb, $sl
 <?= $nav->show() ?>
 <div id='navmain' style='padding:1em;'>
     <div class='nav'>
-        <form method="get" name="slb" action="<?= $PHP_SELF; ?>">
+        <form method="get" name="slb" action="<?= basename(__FILE__); ?>">
             <?= $slbList ?>
             <input type='submit' name='b' value ='Get fotos'/>
         </form>
@@ -110,7 +110,7 @@ $slbList = "<select name='slb'>\n" . getOptionListGrouped($dbConn, $sql_slb, $sl
         if (file_exists('fotos/' . $number . '.jpg')) {
             $photo = 'fotos/' . $number . '.jpg';
         } else {
-            $photo = 'fotos/anonymous.jpg';
+            $photo = 'fotos/0.jpg';
         }
         $leftpix = 0; //100+$colcount*140;
         $toppix = 0; //$rowcount*160;

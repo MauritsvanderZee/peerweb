@@ -135,15 +135,15 @@ function requireCap($cap) {
  * Test the user capability and bail out if not sufficient
  * @param $cap required capability
  */
-function requireStudentCap($snummer, $cap, $prj_id, $milestone, $grp_num) {
+function requirestudentCap($snummer, $cap, $prj_id, $milestone, $grp_num) {
     global $root_url;
-    if (!hasStudentCap($snummer, $cap, $prj_id, $milestone, $grp_num)) {
+    if (!hasstudentCap($snummer, $cap, $prj_id, $milestone, $grp_num)) {
         header("location: $root_url/home.php");
         die('');
     }
 }
 
-function hasStudentCap($snummer, $cap, $prjm_id, $grp_num = 0) {
+function hasstudentCap($snummer, $cap, $prjm_id, $grp_num = 0) {
     global $dbConn;
     $sql = "select pr.capabilities from student_role\n " .
             "join prj_milestone using(prjm_id) \n" .
@@ -166,7 +166,7 @@ function hasStudentCap($snummer, $cap, $prjm_id, $grp_num = 0) {
     return ((!$resultSet->EOF) && (($cap & $resultSet->fields['capabilities']) != 0));
 }
 
-function hasStudentCap2($snummer, $cap, $prjm_id, $grp_num = 0) {
+function hasstudentCap2($snummer, $cap, $prjm_id, $grp_num = 0) {
     global $dbConn;
     // $sql = "select pr.capabilities from student_role join project_roles pr using(prjm_id,rolenum)" .
     //         " join prj_grp using(snummer) join prj_tutor using(prjtg_id) join prj_milestone using(prjm_id)\n" .
@@ -633,6 +633,7 @@ function criteriaRow2($criteria, $judge, $contestant, $rainbow) {
  * default pagehead with title, style and body start, optional script
  */
 function pagehead($title, $script = '') {
+    global $body_class;
     echo '<?xml version="1.0" encoding="utf-8" ?>' . "\n" .
     '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' . "\n" .
     '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n" .
@@ -656,7 +657,7 @@ function pagehead($title, $script = '') {
     <title><?= $title ?></title>
     </head>
     <?php
-    echo "<body class='" . BODY_CLASS . "' >";
+    echo "<body class='{$body_class}' >";
 }
 
 /* pagehead() */
@@ -665,24 +666,24 @@ function pagehead($title, $script = '') {
  * default pagehead with title, style and body start, optional extra headers.
  */
 function pagehead2($title, $script = '') {
-    echo '<?xml version="1.0" encoding="utf-8" ?>' . "\n" .
-    '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' . "\n" .
-    '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n" .
-    '<html xmlns="http://www.w3.org/1999/xhtml">';
-    echo "<head>
+    global $body_class;
+    $styleFile=STYLEFILE;
+    echo <<<"EOF"
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
   <meta http-equiv='Content-type' content='text/html; charset: utf-8'/>
   <meta http-equiv='Content-Script-Type' content='text/javascript'/>
   <meta http-equiv='Content-Style-Type' content='text/css'/>
   <meta name='GENERATOR' content='(x)emacs'/>
-" . '<!-- $Id: peerutils.php 1826 2014-12-27 15:01:13Z hom $ -->' . "
-  <link rel='stylesheet' type='text/css' href='" . STYLEFILE . "'/>
-";
-    ?>
-    <?php echo $script ?>
-    <title><?= $title ?></title>
+  <!-- peerutils.php 1826 2014-12-27 15:01:13Z hom $ -->
+  <link rel='stylesheet' type='text/css' href='{$styleFile}'/>
+{$script}
+    <title>{$title}</title>
     </head>
-    <?php
-    echo "<body class='" . BODY_CLASS . "'>\n";
+    <body class='{$body_class}'>
+EOF;
 }
 
 /* pagehead2() */
@@ -741,8 +742,9 @@ function authenticate($uid, $pw) {
     }
     // apply capabilities
     $_SESSION['userCap'] = $capabilities;
-    if (isSet($tutor))
-        $_SESSION['tutor_code'] = $tutor;
+   if (isSet($tutor)) {
+       $_SESSION['tutor_code'] = $tutor;
+   }
     //  if ($db_name!='peer') $dbConn->log( "usercap=".$_SESSION['userCap']."\n");
     $_SESSION['password'] = $cpasswd;
     return 0;
@@ -1079,7 +1081,7 @@ function dopeermail($to, $sub, $msg, $head, $altto = ADMIN_EMAILADDRESS) {
  * if prj_id < 0 then the max prject in the set is taken
  */
 function getTutorOwnerData($dbConn, $prj_id) {
-    $sql = "select * from project join tutor on(owner_id=userid) join student on(userid=snummer)\n";
+    $sql = "select * from project join tutor on(owner_id=userid) join student_email on(userid=snummer)\n";
     if ($prj_id >= 0) {
         $sql .= " where prj_id=$prj_id";
     } else {
@@ -1106,7 +1108,7 @@ function getTutorOwnerData($dbConn, $prj_id) {
  * if prj_id < 0 then the max prject in the set is taken
  */
 function getTutorOwnerData2($dbConn, $prjm_id) {
-    $sql = "select * from prj_milestone pm natural join project p join tutor t on(p.owner_id=t.userid) join student s on(t.userid=s.snummer)\n";
+    $sql = "select * from prj_milestone pm natural join project p join tutor t on(p.owner_id=t.userid) join student_email s on(t.userid=s.snummer)\n";
     if ($prjm_id >= 0) {
         $sql .= " where prjm_id=$prjm_id";
     } else {
@@ -1135,8 +1137,9 @@ function sequenceNextValue($dbC, $seqnam) {
         echo( "<br>Cannot get sequence value with $sql, cause " . $dbC->ErrorMsg() . "<br>");
         stacktrace(1);
         die();
-    } else
+    } else {
         return $resultSet->fields['nextval'];
+    }
 }
 
 /**
@@ -1200,16 +1203,14 @@ function sanitizeFilename($fn) {
  * @param $dbConn: database connection
  * @param $recipient: entity to find email address for
  * @param $isTutor: distincts between students and tutors, in different tables
- * @return emails address(es), comma separated if found or empty string and message to output
+ * @return emails address.
  */
 function getEmailAddress($dbConn, $recipient, $istutor) {
     $result = '';
     if ($istutor) {
-        $sql = "select email1,email2 from tutor join student on(userid=snummer)\n"
-                . " left join alt_email using(snummer) where tutor='$recipient'";
+        $sql = "select email1 from tutor join student_email on(userid=snummer)";
     } else {
-        $sql = "select email1,email2 from student left join alt_email \n"
-                . "using(snummer) where student.snummer=$recipient";
+        $sql = "select email1 from student_email where snummer=$recipient";
     }
     $resultSet = $dbConn->Execute($sql);
     if ($resultSet === false) {
@@ -1217,8 +1218,6 @@ function getEmailAddress($dbConn, $recipient, $istutor) {
     } else if (!$resultSet->EOF) {
         extract($resultSet->fields);
         $result = trim($email1);
-        if (isSet($email2))
-            $result .= ', ' . trim($email2);
     }
     return $result;
 }
@@ -1232,7 +1231,7 @@ function getEmailAddresses($dbConn, $recipients) {
     $result = '';
     $con = '';
     $recps = '\'' . implode("','", $recipients) . '\'';
-    $sql = "select distinct roepnaam||' '||coalesce(tussenvoegsel||' ','')||achternaam||' <'||trim(email1)||'>' as email from student where snummer in ($recps)";
+    $sql = "select distinct roepnaam||' '||coalesce(tussenvoegsel||' ','')||achternaam||' <'||trim(email1)||'>' as email from student_email where snummer in ($recps)";
     $resultSet = $dbConn->Execute($sql);
     if ($resultSet === false) {
         echo ("getEmailAddresses: cannot get data for $sql : " . $dbConn->ErrorMsg() . "\n");

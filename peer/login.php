@@ -5,10 +5,10 @@ require_once 'TemplateWith.php';
 
 /**
  * prepended by all
- * if not logged in, append query string to $PHP_SELF, to present the parameters to the same page again
+ * if not logged in, append query string to $SELF, to present the parameters to the same page again
  */
 session_start();
-//include_once('peerutils.php');
+//require_once('peerutils.php');
 require_once('makeauthentication.php');
 require_once 'persistentsessiondata.php';
 $loginError = 0;
@@ -92,7 +92,7 @@ if (isSet($_SESSION['userCap'])) {
 if (!isSet($_SESSION['auth_user'])) { // make login screen
     //    pagehead('Peerweb login');
     $action_uri = $_SERVER['REQUEST_URI'];
-    $templatefile = 'templates/logintemplate.html';
+    $templatefile = '../templates/logintemplate.html';
     $result = '';
     if (isSet($_REQUEST['baccessrequest'])) {
         $result = makenewlogincode($_REQUEST['newlogincode'], $_REQUEST['secret']);
@@ -109,14 +109,14 @@ if (!isSet($_SESSION['auth_user'])) { // make login screen
     exit;
 } // else continue with includer
 // get login user data prefixed with login_
-$sql = "select * from student s left join tutor t on(s.snummer=t.userid) where snummer=$peer_id";
+$sql = "select * from student_email s left join tutor t on(s.snummer=t.userid) where snummer=$peer_id";
 $resultSet = $dbConn->Execute($sql);
 $LOGINDATA = array();
 if ($resultSet !== false && !$resultSet->EOF) {
     $LOGINDATA = array_merge($LOGINDATA, $resultSet->fields);
     extract($resultSet->fields, EXTR_PREFIX_ALL, 'login');
 }
-if (basename($PHP_SELF) == 'login.php') {
+if (basename(filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL)) == 'login.php') {
     header("location: $root_url/index.php");
 }
-?>
+

@@ -1,7 +1,7 @@
 <?php
 
 requireCap(CAP_TUTOR);
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'prjMilestoneSelector2.php';
 require_once 'simplequerytable.php';
 require_once 'querytotable.php';
@@ -84,11 +84,11 @@ $pp['newGroupOptionList'] = getOptionListGrouped($dbConn, $grp_sql, $newprjtg_id
 $page = new PageContainer();
 $page_opening = "Move students between project groups.";
 $page->setTitle($page_opening);
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $page->addBodyComponent($nav);
 $css = '<link rel=\'stylesheet\' type=\'text/css\' href=\'' . SITEROOT . '/style/tablesorterstyle.css\'/>';
-$page->addScriptResource('js/jquery.js');
+$page->addScriptResource('js/jquery.min.js');
 $page->addScriptResource('js/jquery.tablesorter.js');
 $page->addHeadText($css);
 $page->addJqueryFragment('$("#myTable").tablesorter({widgets: [\'zebra\'],headers: {0:{sorter:false}}});
@@ -116,13 +116,12 @@ $sql = "SELECT '<input type=''checkbox''  name=''studenten[]'' value='''||st.snu
         . ",tutor as slb"
         //. ",gebdat"
         . ",email1"
-        //. "email2,"
         //. ",hoofdgrp "
         . ",studieplan_short as studieplan  "
         //. ",plaats,straat||coalesce(' '||huisnr,'') as adres
         //,pcode
         //,land\n"
-        . " from student st "
+        . " from student_email st "
         . "join student_class cl using(class_id)\n"
         . "join prj_grp pg using (snummer)\n"
         . "left join fontys_course fc on(st.opl=fc.course)\n"
@@ -140,7 +139,7 @@ $tableFormatter->setTabledef("<table id='myTable' class='tablesorter' summary='y
         . " style='empty-cells:show;border-collapse:collapse' border='1'>");
 
 $pp['memberTable'] = $tableFormatter->getTable();
-$page->addHtmlFragment('templates/defgroupmembersalt.html', $pp);
+$page->addHtmlFragment('../templates/defgroupmembersalt.html', $pp);
 
 $page->show();
 ?>

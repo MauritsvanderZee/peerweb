@@ -1,10 +1,10 @@
 <?php
 requireCap(CAP_SYSTEM);
-include_once('peerutils.php');
-include_once('navigation2.php');
+require_once('peerutils.php');
+require_once('navigation2.php');
 require_once('component.php');
 $scount=100;
-$sql="select count(*) as scount from student";
+$sql="select count(*) as scount from student_email";
 $resultSet=$dbConn->Execute($sql);
 if (!$resultSet->EOF) $scount=$resultSet->fields['scount'];
 
@@ -46,7 +46,7 @@ if (isSet($_POST['bsubmit'])) {
 	$straat       = trim($_POST['straat'][$i]);
 	$plaats       = trim($_POST['plaats'][$i]);
 	$huisnr       = trim($_POST['huisnr'][$i]);
-	$sql .="update student ".
+	$sql .="update student_email ".
 	    "set roepnaam='$roepnaam', ".
 	    "voorletters='$voorletters', ".
 	    "tussenvoegsel=$tussenvoegsel, ".
@@ -67,26 +67,27 @@ $page->addHeadComponent( new Component("<style type='text/css'>
  
  </style>"));
 $page_opening="Peer naw data";
-$nav=new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav=new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $sql="select snummer,rtrim(roepnaam) as roepnaam,\n".
     "rtrim(voorletters) as voorletters,\n".
     "rtrim(tussenvoegsel) as tussenvoegsel,\n".
     "rtrim(achternaam) as achternaam,\n".
     "rtrim(plaats) as plaats,\n".
     "rtrim(straat) as straat,\n".
-    "rtrim(huisnr) as huisnr,rtrim(email1) as email1 from student order by achternaam,roepnaam,snummer limit 20 offset $offset";
+    "rtrim(huisnr) as huisnr,rtrim(email1) as email1 from student_email order by achternaam,roepnaam,snummer limit 20 offset $offset";
 $resultSet= $dbConn->Execute($sql);
+$self=basename(__FILE__);
 ob_start();
 if ( $resultSet === false ) {
     echo( "<br>Cannot get sequence next value with ".$dbConn->ErrorMsg()."<br>");
  } else {
     $rowcounter=$offset;
     $offset2=$offset+19;
-    echo "<form name='naw' method='post' action='$PHP_SELF'>\n".
+    echo "<form name='naw' method='post' action='$self'>\n".
 	"<fieldset><legend>Naw data $offset to $offset2 of $scount</legend>";
     echo "<table border='1' style='border-collapse:collapse' summary='student data'>\n".
 	"<tr><th>#</th><th>snummer</th><th>Roepnaam</th><th>voorletters</th><th>tussenvoegsel</th>".
-	"<th>achternaam</th><th>straat</th><th>huisnr</th><th>Plaats</th><th>email</th></tr>";
+	"<th>achternaam</th><th>email</th></tr>";
     while (!$resultSet->EOF) {
 	extract($resultSet->fields);
 	echo "<tr>\n".
@@ -96,9 +97,6 @@ if ( $resultSet === false ) {
 	    "\t<td><input type='text' size='10' name='voorletters[]' value='$voorletters'/></td>\n".
 	    "\t<td><input type='text' size='10' name='tussenvoegsel[]' value='$tussenvoegsel'/></td>\n".
 	    "\t<td><input type='text' size='20' name='achternaam[]' value='$achternaam'/></td>\n".
-	    "\t<td><input type='text' size='20' name='straat[]' value='$straat'/></td>\n".
-	    "\t<td><input type='text' size='6' name='huisnr[]' value='$huisnr'/></td>\n".
-	    "\t<td><input type='text' size='20' name='plaats[]' value='$plaats'/></td>\n".
 	    "<td>$email1</td>".
 	    "</tr>\n";
 	$rowcounter++;
@@ -119,4 +117,3 @@ if ( $resultSet === false ) {
 $page->addBodyComponent( new Component(ob_get_clean()) );
 ob_clean(); 
 $page->show();
-?>

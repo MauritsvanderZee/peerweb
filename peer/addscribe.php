@@ -1,6 +1,6 @@
 <?php
-requireCap(CAP_SYSTEM);
-include_once('navigation2.php');
+requireCap(CAP_TUTOR_OWNER);
+require_once('navigation2.php');
 require_once 'simplequerytable.php'; 
 require_once 'prjMilestoneSelector2.php';
 require_once'studentpicker.php';
@@ -51,13 +51,13 @@ $page= new PageContainer();
 $page_opening="Add project scribe".
     "<span style='font-size:8pt;'>prj_id $prj_id milestone $milestone prjm_id $prjm_id</span>";
 $page->setTitle('Add a project scribe');
-$nav=new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav=new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $page->addBodyComponent($nav);
-$templatefile='templates/addscribe.html';
+$templatefile='../templates/addscribe.html';
 $template_text= file_get_contents($templatefile, true);
 $studentPicker->setPresentQuery("select scribe as snummer from project_scribe where prj_id=$prj_id");
 $student_picker_text=$studentPicker->getPicker();
-$scribeQuery="select snummer,achternaam,roepnaam,tussenvoegsel from student\n"
+$scribeQuery="select snummer,achternaam,roepnaam,tussenvoegsel from student_email\n"
   ."where snummer in (select scribe from project_scribe where prj_id=$prj_id) order by achternaam,roepnaam";
 $scribeTable=simpleTableString($dbConn,$scribeQuery,
 			       "<table summary='students found' border='1' style='border-collapse:collapse'>");

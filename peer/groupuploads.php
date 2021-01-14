@@ -1,8 +1,8 @@
 <?php
 requireCap(CAP_TUTOR);
-include_once('peerutils.php');
-include_once('documentfolders2.php');
-include_once('navigation2.php');
+require_once('peerutils.php');
+require_once('documentfolders2.php');
+require_once('navigation2.php');
 require_once 'prjMilestoneSelector2.php';
 $prj_id = 1;
 $milestone = 1;
@@ -68,7 +68,7 @@ if ($resultSet === false) {
 }
 pagehead('Upload viewer for tutors');
 $page_opening = "Documents handed in by a group";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $sql = "select sum(filesize) as zip_filesize from uploads where prjm_id=$prjm_id group by prjm_id";
 $resultSet = $dbConn->Execute($sql);
@@ -83,10 +83,10 @@ if ($resultSet === false) {
 <div id='navmain' style='padding:1em;'>
     <h1>Read uploaded files</h1>
     <fieldset><legend>select project/milestone</legend>
-        <form method="get" name="project" action="<?= $PHP_SELF ?>">
+        <form method="get" name="project" action="<?= basename(__FILE__) ?>">
             <?= $prj_id_selector ?><input type="submit" value="Get Project"/> <?= $prj_id ?>M<?= $milestone ?>/prjm_id=<?= $prjm_id ?>( <?= $doccount ?> documents).
         </form>
-        <form method="get" name="documenttype" action="<?= $PHP_SELF ?>">
+        <form method="get" name="documenttype" action="<?= basename(__FILE__) ?>">
             <?= $docList ?><input type="submit" value="Get doc type"/>  (doctype <?= $doctype ?>)
         </form>
     </fieldset>
@@ -109,7 +109,7 @@ if ($resultSet === false) {
             . "join uploaddocumenttypes ut using(prj_id,doctype)\n"
             . "join project_deliverables pd on(pd.prjm_id=u.prjm_id and u.doctype=pd.doctype)\n"
             . "left join doctype_upload_group_count dugc on(dugc.prjtg_id=u.prjtg_id and dugc.doctype=u.doctype)\n"
-            . "join student s on(s.snummer=u.snummer)\n"
+            . "join student_email s on(s.snummer=u.snummer)\n"
             . "join student_class using (class_id)\n"
             . "left join document_critique_count on (upload_id=doc_id)\n"
             . "left join (select distinct prjtg_id,grp_num \n"

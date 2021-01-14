@@ -2,7 +2,7 @@
 requireCap(CAP_TUTOR);
 require_once 'validators.php';
 require_once 'component.php';
-include_once 'threelinetablecard.php';
+require_once 'threelinetablecard.php';
 
 if (isSet($_REQUEST['class_id'])) {
     $basename = 'classtablecards';
@@ -18,7 +18,7 @@ if (isSet($_REQUEST['class_id'])) {
             "course_short||'.'||sclass as line3," .
             "snummer as barcode,\n" .
             "achternaam,roepnaam\n" .
-            "from student s join student_class using(class_id) join fontys_course fc on(s.opl=fc.course)\n" .
+            "from student_email s join student_class using(class_id) join fontys_course fc on(s.opl=fc.course)\n" .
             " where class_id=$class_id\n" .
             " order by achternaam,roepnaam";
     barcodedCard($dbConn, $basename, $sql);
@@ -32,11 +32,11 @@ if (isSet($_REQUEST['class_id'])) {
     }
     $basename = $basename . '-' . date('Ymd');
     $sql = "select roepnaam||coalesce(' '||tussenvoegsel||' ',' ')||achternaam as line1,\n" .
-            "snummer as line2,\n" .
-            "course_short||'.'||coalesce(apt.alias,'g'||apt.grp_num) as line3," .
+            "'Always have Pen or Pencil' as line2,\n" .
+            "course_short||'.'||coalesce(apt.alias,apt.grp_name,'g'||apt.grp_name) as line3," .
             "snummer as barcode,\n" .
             "achternaam,roepnaam\n" .
-            "from student s  join student_class using(class_id) join fontys_course fc on(s.opl=fc.course)\n" .
+            "from student_email s  join student_class using(class_id) join fontys_course fc on(s.opl=fc.course)\n" .
             " join prj_grp using (snummer) join all_prj_tutor apt using(prjtg_id)" .
             " where prjm_id=$prjm_id and snummer in (select snummer from prj_grp join all_prj_tutor using(prjtg_id) where prjm_id=$prjm_id)\n" .
             " order by grp_num,achternaam,roepnaam";

@@ -1,9 +1,9 @@
 <?php
 
 requireCap(CAP_ASSIGN_SLB);
-include_once('peerutils.php');
-include_once 'component.php';
-include_once('navigation2.php');
+require_once('peerutils.php');
+require_once 'component.php';
+require_once('navigation2.php');
 
 //require_once 'simplequerytable.php';
 require_once 'querytotable.php';
@@ -21,15 +21,6 @@ if (isSet($_REQUEST['oldclass_id'])) {
 if (isSet($_POST['newclass_id'])) {
     $_SESSION['newclass_id'] = $newclass_id = $_POST['newclass_id'];
 }
-if (isSet($_POST['update']) && isSet($_POST['studenten'])) {
-    $memberset = '\'' . implode("','", $_POST['studenten']) . '\'';
-    $sql = "update student set class_id='$newclass_id' " .
-            "where snummer in ($memberset)";
-    $resultSet = $dbConn->Execute($sql);
-    if ($resultSet === false) {
-        die("<br>Cannot update student with " . $sql . " reason " . $dbConn->ErrorMsg() . "<br>");
-    }
-}
 
 if (isSet($_POST['slb']) && preg_match('/^\d+$/', $_POST['slb'])) {
     //$newslb= preg_replace('/\W+/g','',$_POST['slb']);
@@ -37,19 +28,19 @@ if (isSet($_POST['slb']) && preg_match('/^\d+$/', $_POST['slb'])) {
 }
 
 if (isSet($_POST['setslb']) && isSet($slb) && isSet($_POST['studenten'])) {
-    $memberset = '\'' . implode("','", $_POST['studenten']) . '\'';
-    $sql = "update student set slb=$slb " .
-            "where snummer in ($memberset)";
+    $memberset = implode(",", $_POST['studenten']);
+    $sql = "update student_email set slb=$slb " .
+            "where snummer in ({$memberset})";
     $resultSet = $dbConn->Execute($sql);
     if ($resultSet === false) {
-        die("<br>Cannot update student  with " . $sql . " reason " . $dbConn->ErrorMsg() . "<br>");
+        die("<br>Cannot update student_email  with " . $sql . " reason " . $dbConn->ErrorMsg() . "<br>");
     }
 }
 $class_sql = "select distinct student_class.sclass||'#'||class_id||' (#'||coalesce(student_count,0)||')'  as name,\n"
         . "class_id as value, \n"
         . "  trim(faculty_short)||'.'||trim(coalesce(cluster_name,'')) as namegrp, \n"
         . " faculty_short,\n"
-        . " case when class_cluster=(select class_cluster from student join student_class using(class_id) where snummer=$peer_id) then 0 else 1 end as myclass "
+        . " case when class_cluster=(select class_cluster from student_email join student_class using(class_id) where snummer=$peer_id) then 0 else 1 end as myclass "
         . " from student_class "
         . " natural left join class_cluster\n"
         . " left join faculty  using(faculty_id) \n"
@@ -63,7 +54,7 @@ $pp['oldClassOptionsList'] = $classSelectorClass->setSelectorName('oldclass_id')
 $page_opening = "Get and set Student Study coach (SLB) by class.";
 $page = new PageContainer();
 $page->setTitle("Set/check SLB");
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $sql_slb = "select achternaam||','||roepnaam||' ['||tutor||']' as name,\n"
         . " snummer as value,faculty_short||'-'||course_short as namegrp \n"
@@ -74,7 +65,7 @@ $sql_slb = "select achternaam||','||roepnaam||' ['||tutor||']' as name,\n"
 $pp['slbList'] = getOptionListGrouped($dbConn, $sql_slb, $slb);
 
 $css = '<link rel=\'stylesheet\' type=\'text/css\' href=\'' . SITEROOT . '/style/tablesorterstyle.css\'/>';
-$page->addScriptResource('js/jquery.js');
+$page->addScriptResource('js/jquery.min.js');
 $page->addScriptResource('js/jquery.tablesorter.js');
 $page->addHeadText($css);
 $page->addJqueryFragment('$("#myTable").tablesorter({widgets: [\'zebra\'],headers: {0:{sorter:false}}});');
@@ -89,9 +80,9 @@ $sql = "SELECT '<input type=''checkbox''  name=''studenten[]'' value='''||st.snu
         . "t.tutor as slb,"
         . "sclass as klas,"
         . " hoofdgrp,"
-        . " cohort,course_short sprogr,studieplan_short as splan,lang,sex,gebdat,"
-        . " land,plaats,pcode\n"
-        . " from student st \n"
+        . " cohort,course_short sprogr,studieplan_short as splan,lang,sex as gender,gebdat"
+        //. ", land,plaats,pcode\n"
+        . " from student_email st \n"
         . "join student_class cl using(class_id)\n"
         . "natural left join studieplan \n"
         . "left join fontys_course fc on(st.opl=fc.course)\n"
@@ -108,7 +99,7 @@ $tableFormatter->setCheckColumn(0);
 $tableFormatter->setTabledef("<table id='myTable' class='tablesorter' summary='your requested data'"
         . " style='empty-cells:show;border-collapse:collapse' border='1'>");
 $pp['cTable'] = $tableFormatter;
-$page->addHtmlFragment('templates/slb.html', $pp);
+$page->addHtmlFragment('../templates/slb.html', $pp);
 $page->show();
 ?>
  

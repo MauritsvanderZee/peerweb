@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_SYSTEM);
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'TableBuilder.class.php';
 
 class MyRowFactory implements RowFactory {
@@ -153,7 +153,7 @@ if (isSet($_REQUEST['bsubmit']) && isSet($_REQUEST['participant']) && isProjectS
 // get group tables for a project
 pagehead('Record task completed');
 $page_opening="Record completion of tasks for project";
-$nav=new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav=new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $nav->show();
 $sql3="select task_id as value,name||': '||description as name from project_task order by task_number";
@@ -176,7 +176,7 @@ $sql ="select st.snummer,"
   .",trans_id,operator,date_trunc('second',ts),from_ip \n"
   ." from (select snummer,grp_num from prj_grp \n"
   ." join prj_milestone using(prjm_id) where prjm_id=$prjm_id) pg \n"
-  ." natural join student st \n"
+  ." natural join student_email st \n"
   ." natural join portrait p \n"
   ." natural left join project_task pt \n"
   ." natural left join project_task_completed_latest ptc\n"
@@ -190,7 +190,7 @@ $tableBuilder = new TableBuilder($dbConn,$myRowFactory);
 <div id='navmain' style='padding:1em;'>
   <?=$prjSel->getWidget()?>
 <fieldset><legend>Select task</legend>
-<form method="post" name="activity" action="<?=$PHP_SELF;?>">
+<form method="post" name="activity" action="<?=basename(__FILE__);?>">
   Select task: <input type='hidden' name='prjm_id' value='<?=$prjm_id?>'/>
   <input type='hidden' name='task_id' value='<?=$task_id?>'/>
 <?=$task_id_selector?><input type='submit' name='sbm' value='Get'>

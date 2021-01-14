@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_TUTOR);
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 include 'simplequerytable.php';
 require_once 'selector.php';
 require_once 'studentpicker.php';
@@ -87,7 +87,7 @@ class MyRowFactory implements RowFactory {
             $trans_title = "title = 'operator $operator at $ts from $from_ip'";
         }
         return "\t<td>\n"
-                . "\t\t<div style='font-size:80%' id='radio_${snummer}' class='$divClass'>\n"
+                . "\t\t<div style='font-size:80%' id='radio_${snummer}' class='{$divClass}'>\n"
                 . "\t\t\t<input type='radio' class='absent a$grp_id' name='mark_${snummer}[]'"
                 . " value='' $checkedAbsent style='vertical-align: middle' onChange='this.parentNode.className=\"absent\"'>Absent&nbsp;<br/>\n"
                 . "\t\t\t<input type='radio' class='present p$grp_id' name='mark_${snummer}[]'"
@@ -176,7 +176,7 @@ if (isSet($_REQUEST['bsubmit']) && isSet($_REQUEST['participant']) && isProjectS
     }
 }
 
-$script = '<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>'
+$script = '<script type="text/javascript" src="js/jquery.min.js"></script>'
         . '<script type="text/javascript" language="JavaScript">
     function checkAll(theForm, cName, cClass, status) {
     var n=theForm.elements.length;
@@ -197,7 +197,7 @@ $script = '<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 // get group tables for a project
 pagehead2('Get presence list', $script);
 $page_opening = "Presence list for students attending activities xyz";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $nav->show();
 $sql3 = "select datum||'@'||start_time||', '||' ('||act_id||', #'||coalesce(apc.count,0)||') '||act_type_descr||' '||rtrim(short)" .
@@ -233,7 +233,7 @@ if ($resultSet === false) {
             "snummer as participant,ap.presence,ar.reason as comment,apt.grp_num\n" .
             ",coalesce(alias,'g'||apt.grp_num) as grp_name, 'g'||apt.grp_num as grp_id" .
             " from prj_grp pg join all_prj_tutor apt using(prjtg_id) join grp_size using(prjtg_id)\n" .
-            " natural join student st " .
+            " natural join student_email st " .
             " natural join portrait \n" .
             "left join (select snummer,presence from activity_participant \n" .
             "            where act_id=$act_id) ap using(snummer)\n" .
@@ -243,5 +243,5 @@ if ($resultSet === false) {
             " order by apt.grp_num,achternaam,roepnaam\n";
     $myRowFactory = new MyRowFactory();
     $tableBuilder = new TableBuilder($dbConn, $myRowFactory);
-    include 'templates/presencelist.html';
+    include '../templates/presencelist.html';
 }

@@ -1,6 +1,6 @@
 <?php
-requireCap(CAP_SYSTEM);
-include_once('peerutils.php');
+requireCap(CAP_TUTOR);
+require_once('peerutils.php');
 require_once('validators.php');
 require_once('component.php');
 $debug = false;
@@ -14,7 +14,7 @@ $sql = "select substr(now()::text,1,16) as ts,rtrim(afko)||'-'||year as project,
         . "from all_prj_tutor where prjtg_id=$prjtg_id";
 $resultSet = $dbConn->Execute( $sql );
 extract( $resultSet->fields );
-$texdir = $site_home . '/tex/out';
+$texdir = $site_home . '/tex/photolist_out';
 $basename = sanitizeFilename( 'groupphotolist_' . trim( preg_replace( '/\s+/',
                         '_', $project . '_' . $grp_name ) ) );
 $filename = $basename . '.tex';
@@ -64,7 +64,7 @@ fwrite( $fp,
 
 $sql = "select snummer,roepnaam||coalesce(' '||tussenvoegsel||' ',' ')||achternaam as name,\n"
         . " photo, coalesce(tutor,'---') as slb\n"
-        . " from student s join prj_grp pg using(snummer) natural join portrait p"
+        . " from student_email s join prj_grp pg using(snummer) natural join portrait p"
         . " left join tutor t on(s.slb=t.userid) \n"
         . " where pg.prjtg_id=$prjtg_id\n"
         . " order by achternaam,roepnaam\n";
@@ -75,7 +75,6 @@ if ( $debug ) {
 if ( !$resultSet->EOF ) {
     fwrite( $fp, "\\tablehead{" . $grp_name . "}\n" );
 }
-$fotodir = '../../peer/';
 $colcount = 0;
 $cont = '';
 while ( !$resultSet->EOF ) {
@@ -84,8 +83,7 @@ while ( !$resultSet->EOF ) {
             $cont
             . "\n"
             . "\\begin{minipage}{35mm}"
-            . "\\center\\includegraphics[height=40mm]{"
-            . $fotodir . $photo . "}"
+            . "\\center\\includegraphics[height=40mm]{{$fotobase}/{$photo}}"
             . "\n\\vfill\\sf{}\\textbf{" . $name
             . "}\\\\$snummer ($slb)"
             . "\\end{minipage}\n" );

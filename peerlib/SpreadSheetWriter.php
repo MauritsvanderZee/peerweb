@@ -118,10 +118,6 @@ class SpreadSheetWriter {
                     $fileExtension = 'xlsx';
                     $excelFormat = 'Excel2007';
                     break;
-                case 'Excel2003':
-                    $fileExtension = 'xls';
-                    $excelFormat = 'Excel5';
-                    break;
                 default:
                 case 'csv':
                     $fileExtension = 'csv';
@@ -174,7 +170,6 @@ class SpreadSheetWriter {
             Spread sheet&nbsp;output:
             <select name='filetype'>
                 <option value='Excel2007'>Excel2007</option>
-                <option value='Excel2003'>Excel2003</option>
                 <option value='csv'>semicolon separated</option>
                 <option value='AMC-exam'> comma ',' seperated</option>
                 <option value='PROGRESS-set'>Progress result set</option>
@@ -206,23 +201,23 @@ class SpreadSheetWriter {
     }
 
     function writeAMCFile($query, $filename) {
-
-        $this->dbConn->queryToCSV($query, $filename, ',', false, 'Content-type: text/csv; charset: UTF-8;', false);
+        require_once 'querytocsv.php';
+        queryToCSV($this->dbConn, $query, $filename, ',', false, 'Content-type: text/csv; charset: UTF-8;', false);
         exit(0);
     }
 
     function writeProgresFile($query, $filename) {
+        require_once 'querytocsv.php';
 
-        $this->dbConn->queryToCSV($query, $filename, ';', false, 'Content-type: text/x-comma-separated-values; charset: UTF-8;', false);
+        queryToCSV($this->dbConn, $query, $filename, ';', false, 'Content-type: text/x-comma-separated-values; charset: UTF-8;', false);
         exit(0);
     }
 
     function writeCSVFile($query, $filename) {
+        require_once 'querytocsv.php';
 
-        $this->dbConn->queryToCSV($query, $filename, ';', true, 'Content-type: text/x-comma-separated-values; charset: UTF-8;', true);
+        queryToCSV($this->dbConn, $query, $filename, ';', true, 'Content-type: text/x-comma-separated-values; charset: UTF-8;', true);
         exit(0);
     }
 
 }
-
-?>

@@ -14,7 +14,7 @@ $sql = "select act_id,rtrim(afko) as afko,short,datum,act_type_descr,to_char(sta
         . "part from activity natural join activity_type join all_prj_tutor using(prjm_id) where act_id=$act_id";
 $resultSet = $dbConn->Execute($sql);
 extract($resultSet->fields);
-$texdir = $site_home . '/tex';
+$texdir = $site_home . '/tex/attendancelist_out';
 $basename = sanitizeFilename('attendancelist_' . trim(preg_replace('/\s+/', '_', $afko.'_'.$short)) . '_' . $datum . '_' . $time);
 $filename = $basename . '.tex';
 $pdfname = $basename . '.pdf';
@@ -54,7 +54,7 @@ $sql = "select coalesce(grp_name,'g'||grp_num) as sgroup,tutor,apt.grp_num,\n" .
         " case when reason notnull then 'excused' else null end as check" .
         " from prj_grp pg join all_prj_tutor apt using(prjtg_id)\n" .
         " join activity a  using(prjm_id) \n" .
-        " join student st using(snummer)  \n" .
+        " join student_email st using(snummer)  \n" .
         " left join absence_reason using(act_id,snummer)\n".
         " where act_id=$act_id\n" .
         " order by grp_num,achternaam,roepnaam\n";

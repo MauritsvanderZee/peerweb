@@ -2,8 +2,8 @@
 
 requireCap(CAP_TUTOR);
 require_once 'validators.php';
-include_once 'navigation2.php';
-include_once 'simplequerytable.php';
+require_once 'navigation2.php';
+require_once 'simplequerytable.php';
 require_once 'prjMilestoneSelector2.php';
 require_once 'presencetable.php';
 require_once 'CheckTable.class.php';
@@ -49,13 +49,13 @@ $page = new PageContainer();
 
 $page->setTitle( 'Create of view maillists for peerweb project' );
 $page_opening = "Mail lists for project $afko $description prjm_id $prjm_id prj_id $prj_id milestone $milestone";
-$nav = new Navigation( $tutor_navtable, basename( $PHP_SELF ), $page_opening );
+$nav = new Navigation( $tutor_navtable, basename( __FILE__ ), $page_opening );
 $page->addBodyComponent( $nav );
 ob_start();
 simpletable( $dbConn, $sql, "<table summary='maillists for project ' style='border-collapse:collapse' border='1'>" );
 $maillist_table = ob_get_clean();
 
-$templatefile = 'templates/createmaillists.html';
+$templatefile = '../templates/createmaillists.html';
 $template_text = file_get_contents( $templatefile, true );
 $text = '';
 if ( $template_text === false ) {

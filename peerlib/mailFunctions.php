@@ -6,7 +6,7 @@ require_once 'TemplateWith.php';
 /**
  * Send an html formatted email from a form.
  * @param $dbConn connection
- * @param $sql query. Must produce email1 and name, optional email2.
+ * @param $sql query. Must produce email1 and name
  * @param $fsubject subject
  * @param $body mail body
  * @param $sender sender email address
@@ -51,8 +51,12 @@ function formMailer($dbConn, $sql, $fsubject, $body, $sender, $sender_name) {
 }
 
 /**
- * Create a prepared statement parameter list from a set
+ * Create a prepared statement parameter list from a set.
+ * The length of set determines the number of parameter placeholder ($x) are created,
+ * the optional firstnumber what to start counting with.
+ * 
  * @param type $set
+ * @param $firstnumber starting number
  */
 function setToParamList($set, $firstnumber = 1) {
     $paramset = [];
@@ -99,7 +103,7 @@ class FormMailer {
     public function mailWithData($query, $params = []) {
         $recipients = '';
         $sql = "select roepnaam||' '||coalesce(tussenvoegsel||' ','')||achternaam "
-                . " as sendername, email1 as sendermail from student where snummer=$this->senderid";
+                . " as sendername, email1 as sendermail from student_email where snummer=$this->senderid";
 //        echo "<pre>[{$query}]</pre><br/>";
 //        echo "<pre> params=".print_r($params, true)."</pre>";
 //        echo "<br/>";

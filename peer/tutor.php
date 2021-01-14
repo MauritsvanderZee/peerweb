@@ -11,17 +11,17 @@ $title = "Tutor editor on DB {$db_name} ";
 $page = new PageContainer($title);
 $ste = new SimpleTableEditor($dbConn, $page);
 $ste->setTitle($title)
-        ->setFormAction($PHP_SELF)
+        ->setFormAction(basename(__FILE__))
         ->setRelation('tutor')
         ->setMenuName('tutor')
-        ->setRawNames(array('userid'))
+    ->setRawNames(array('userid','roepnaam','achternaam','tussenvoegsel','teaches', 'office'))
         ->setKeyColumns(array('userid'))
-        ->setSubRel('student')
+        ->setSubRel('student_email')
         ->setSubRelJoinColumns(array('userid' => 'snummer'))
         ->setNameExpression("rtrim(tutor)")
         ->setNameExpression("rtrim(tutor)||':'||rtrim(sub_rel.achternaam)")
         ->setListRowTemplate(array('tu_.faculty_id', 'sub_rel.faculty_id', 'tu_.tutor', 'userid', 'team', 'sub_rel.achternaam', 'sub_rel.roepnaam'))
         ->setOrderList(array('sub_rel.faculty_id', 'tutor'))
-        ->setFormTemplate('templates/tutor.html')
+        ->setFormTemplate('../templates/tutor.html')
         ->show();
 ?>

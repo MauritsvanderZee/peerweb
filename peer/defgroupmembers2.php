@@ -1,13 +1,13 @@
 <?php
 
 requireCap(CAP_TUTOR);
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'prjMilestoneSelector2.php';
 require_once 'maillists.inc.php';
 require_once 'TemplateWith.php';
 
 if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
-    include_once 'templates/getrealbrowser.html';
+    require_once '../templates/getrealbrowser.html';
     exit(0);
 }
 $maillist_dir = '/home/maillists';
@@ -114,7 +114,7 @@ $studentListQuery = "SELECT apt.grp_num||': '||achternaam||', '||roepnaam||' '||
         "||(case when apt.prj_tutor_open=true then 'open' else 'closed' end) as namegrp,\n" .
         " apt.grp_num,nationaliteit\n" .
         " from (select prjtg_id,prjm_id,grp_num,prj_tutor_open,tutor_id,grp_name from prj_tutor where prjm_id=$prjm_id) apt\n".
-        "  join prj_grp pg using(prjtg_id) join student st using (snummer)\n" .
+        "  join prj_grp pg using(prjtg_id) join student_email st using (snummer)\n" .
         " join student_class cl using(class_id) \n" .
         " join tutor t on(userid=tutor_id)".
         " left join grp_alias using(prjtg_id)". 
@@ -123,7 +123,7 @@ $studentListQuery = "SELECT apt.grp_num||': '||achternaam||', '||roepnaam||' '||
 
 $dbConn->log($studentListQuery);
 $studentList = getOptionListGrouped($dbConn, $studentListQuery, $grp_num, 'grp_num');
-$isAdmin = hasCap(CAP_SYSTEM) ? 'true' : 'false';
+$isAdmin = hasCap(CAP_TUTOR_OWNER) ? 'true' : 'false';
 
 $sql = "select tutor,tutor_id from prj_tutor join tutor on(prj_tutor.tutor_id=tutor.userid)"
         . " where prjm_id=$prjm_id and grp_num='$grp_num'";
@@ -138,7 +138,7 @@ $sql = "select grp_num||' '||coalesce(grp_name,'g'||grp_num)||': '||achternaam||
         "||tutor.tutor||';'||tutor.userid||')' as name,\n" .
         " grp_num as value" .
         " from prj_tutor join tutor on(tutor.userid=prj_tutor.tutor_id)\n" .
-        " join student on (userid=snummer)\n" .
+        " join student_email on (userid=snummer)\n" .
         " join faculty on (faculty.faculty_id=tutor.faculty_id)\n" .
         " natural left join grp_alias \n " .
         " where prjm_id=$prjm_id order by grp_num";
@@ -194,12 +194,12 @@ $page_opening = "Put participants into groups";
 $page_opening = "Select participants into project groups&nbsp;" .
         "<span style='font-size:8pt;'>prj_id $prj_id milestone $milestone prjm_id $prjm_id</span>";
 $page->setTitle('Put participants into groups');
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 
 extract(getTutorOwnerData2($dbConn, $prjm_id), EXTR_PREFIX_ALL, 'ot');
 
 $page->addBodyComponent($nav);
-$templatefile = 'templates/defgroupmembers3.html';
+$templatefile = '../templates/defgroupmembers3.html';
 $ie_warning = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') ? "Internet Exploder is not supported" : "";
 $template_text = file_get_contents($templatefile, true);
 if ($template_text === false) {

@@ -2,7 +2,7 @@
 requireCap( CAP_TUTOR );
 require_once('validators.php');
 require_once('querytotable.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'prjMilestoneSelector2.php';
 require_once 'project_selector.php';
 
@@ -159,7 +159,7 @@ $roleTable = "<table class='tabledata' border='1' summary='current roles'>"
         . "<th {$tdattrib }>Current Role</th><th {$tdattrib}>Cap</th><th {$tdattrib}>New Role</th></tr>";
 $sqltut = "select s.snummer,achternaam,roepnaam,tussenvoegsel,\n" .
         "pr.rolenum,role,pr.capabilities as capabilities \n" .
-        "from prj_grp pg join student s using(snummer) \n" .
+        "from prj_grp pg join student_email s using(snummer) \n" .
         " join prj_tutor pt on(pg.prjtg_id=pt.prjtg_id)\n" .
         " join prj_milestone pm on(pm.prjm_id=pt.prjm_id)\n" .
         " left join student_role sr on(sr.prjm_id=pt.prjm_id and sr.snummer=pg.snummer)\n" .
@@ -207,12 +207,12 @@ $inputColumns = array(
 $roleDefTable = getQueryToTableChecked2( $dbConn, $sql, false, -1, new RainBow( 0x46B4B4, 64, 32, 0 ), 'document[]', $doctype_set, $inputColumns );
 pagehead( 'Define types of roles students can play.' );
 $page_opening = "Define the roles the students may assume in a project team.";
-$nav = new Navigation( $tutor_navtable, basename( $PHP_SELF ), $page_opening );
+$nav = new Navigation( $tutor_navtable, basename( __FILE__ ), $page_opening );
 $nav->setInterestMap( $tabInterestCount );
 $page = new PageContainer();
 $page->setTitle( $page_opening );
 $page->addBodyComponent( $nav );
-$templatefile = 'templates/defprojectrolestop.html';
+$templatefile = '../templates/defprojectrolestop.html';
 $template_text = file_get_contents( $templatefile, true );
 if ( $template_text === false ) {
     $page->addBodyComponent( "<strong>cannot read template file $templatefile</strong>" );
@@ -220,7 +220,7 @@ if ( $template_text === false ) {
     $page->addBodyComponent( templateWith( $template_text, get_defined_vars() ) );
 }
 if ( $isTutorOwner ) {
-    $templatefile = 'templates/defprojectrolesbottom.html';
+    $templatefile = '../templates/defprojectrolesbottom.html';
     $template_text = file_get_contents( $templatefile, true );
     if ( $template_text === false ) {
         $page->addBodyComponent( "<strong>cannot read template file $templatefile</strong>" );

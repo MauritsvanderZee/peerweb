@@ -9,11 +9,11 @@ requireCap(CAP_TUTOR);
  * @author Pieter van den Hombergh
  * $Id: defstudent_class.php 1723 2014-01-03 08:34:59Z hom $
  */
-include_once("ste.php");
+require_once("ste.php");
 $page = new PageContainer("Class adminstration page  on DB " . $db_name);
 //$dbConn->setSqlAutoLog(true);
 $ste = new SimpleTableEditor($dbConn, $page);
-$ste->setFormAction($PHP_SELF)
+$ste->setFormAction(basename(__FILE__))
         ->setRelation('student_class')
         ->setMenuName('student_class')
         ->setKeyColumns(array('class_id'))
@@ -22,7 +22,7 @@ $ste->setFormAction($PHP_SELF)
 //        ->setSupportingRelation('faculty')
 //        ->setSupportingJoinList(array('faculty_id' => 'faculty_id'))
         ->setOrderList(array('sort1', 'sort2', 'sclass'))
-        ->setFormTemplate('templates/class_admin.html')
+        ->setFormTemplate('../templates/class_admin.html')
         ->show();
 ?>
 

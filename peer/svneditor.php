@@ -2,7 +2,7 @@
 requireCap(CAP_SYSTEM);
 require_once('validators.php');
 
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once('conffileeditor.inc.php');
 extract( $_SESSION );
 if ( isSet( $_REQUEST['Edit'] ) ) {
@@ -19,7 +19,7 @@ if ( isSet( $_POST['bsumbit'] ) && isSet( $_POST['description'] ) ) {
   $dbConn->log( "saved $description" );
 }
 $pp = array( );
-$sql = "select repospath,description,id as fileNr from personal_repos where owner=$snummer and id=$fileNr\n";
+$sql = "select repospath,coalesce(description,'') as description,id as fileNr from personal_repos where owner=$snummer and id=$fileNr\n";
 $resultSet = $dbConn->Execute( $sql );
 if ( !$resultSet->EOF ) {
   $pp = array_merge( $pp, $resultSet->fields );
@@ -37,9 +37,9 @@ function closeAction() {
   ' );
 $page->setTitle( 'Edit Subversion repositories' );
 $page_opening = "Edit Subversion repositories for $roepnaam $tussenvoegsel $achternaam ($snummer)";
-$nav = new Navigation( $tutor_navtable, basename( $PHP_SELF ), $page_opening );
+$nav = new Navigation( $tutor_navtable, basename( __FILE__ ), $page_opening );
 $nav->setInterestMap( $tabInterestCount );
 $page->addBodyComponent( $nav );
-$page->addHtmlFragment( 'templates/svneditor.html', $pp );
+$page->addHtmlFragment( '../templates/svneditor.html', $pp );
 $page->show();
 ?>

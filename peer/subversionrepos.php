@@ -1,9 +1,10 @@
 <?php
+
 requireCap(CAP_TUTOR);
 
-include_once('peerutils.php');
+require_once('peerutils.php');
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once('conffileeditor2.php');
 require_once 'prjMilestoneSelector2.php';
 $pp = array();
@@ -38,7 +39,7 @@ $pageTitle = "Subversion repositories";
 $page->setTitle($pageTitle);
 
 $cmdstring = '';
-$pp['repoURL'] = $repoUrl= $svnserver_url . '/svn/' . $year . '/' . $new_repos_name . '/';
+$pp['repoURL'] = $repoUrl = $svnserver_url . '/svn/' . $year . '/' . $new_repos_name . '/';
 $twigs = '';
 if (isSet($_POST['bcreate'])) {
     if (isSet($_REQUEST['new_repos_name']) && $_REQUEST['new_repos_name']) {
@@ -46,13 +47,8 @@ if (isSet($_POST['bcreate'])) {
     }
     $individual = (trim($_REQUEST['repos_individual']) == 'individual') ? 'individual' : 'group';
     $twigs = trim($_REQUEST['twigs']);
-    if ($individual == 'individual') {
-        $cmdstring = $subversionscriptdir . "/mksvnindividual2.pl --db $db_name "
-                . "--projectmilestone $prjm_id --parent $reposroot --name $new_repos_name --url_base $url_base --twigs='$twigs'";
-    } else {
-        $cmdstring = $subversionscriptdir . "/mksvngroup2.pl --db $db_name "
-                . "--projectmilestone $prjm_id --parent $reposroot --name $new_repos_name --url_base $url_base --twigs '$twigs'";
-    }
+    $cmdstring = $subversionscriptdir . "/mksvngroup2.pl --db $db_name "
+            . "--projectmilestone $prjm_id --parent $reposroot --name $new_repos_name --url_base $url_base --twigs '$twigs'";
     ob_start();
     $handle = popen($cmdstring, 'r');
     fpassthru($handle);
@@ -90,7 +86,7 @@ if (!$resultSet->EOF) {
         $_SESSION['conf_editor_basedir'] = '/home';
         $_SESSION['fileToEdit'] = $authzfile;
         $pp['repos_id'] = $id;
-        $pp['fileeditor'] = new ConfFileEditor($PHP_SELF, 'templates/authzeditor.html');
+        $pp['fileeditor'] = new ConfFileEditor(basename(__FILE__), '../templates/authzeditor.html');
     }
 }
 $pp['page'] = $page;
@@ -100,9 +96,10 @@ $sql = "select repospath,grp_num,description as repos_description," .
         "url_tail,isroot,id,last_commit from repositories \n" .
         "\t where prjm_id=$prjm_id order by repospath";
 $resultSet = $dbConn->Execute($sql);
-$repolist='';
-$repobase='';
+$repolist = '';
+$repobase = '';
 $reposTable = '';
+$self=basename(__FILE__);
 if (!$resultSet->EOF) {
     $reposTable .= "<fieldset><legend>Available repositories</legend>"
             . "<table>\n"
@@ -113,7 +110,7 @@ if (!$resultSet->EOF) {
         $editControl = '&nbsp;';
         $url = $svnserver_url . $url_tail;
         if ($isroot == 't') {
-            $editControl = "\t<form method='post' name='editauthz' action='$PHP_SELF'>\n"
+            $editControl = "\t<form method='post' name='editauthz' action='$self'>\n"
                     . "\t\t<input type='submit' value='Edit autzh' name='edit_authz'  "
                     . "title='edit authorization for repo or repo group'/>\n"
                     . "\t\t<input type='hidden' name='repos_id' value='$id'/>\n\t</form>";
@@ -124,27 +121,27 @@ if (!$resultSet->EOF) {
                 . "<td>$youngest</td>"
                 . "<td>{$last_commit}</td>"
                 . "\t<td>$editControl</td>\n</tr>\n";
-        $rep=preg_replace('/\/(.+\/){3}?(\w+)/','${2}',$url_tail);
-        $repolist .=" {$rep}";
+        $rep = preg_replace('/\/(.+\/){3}?(\w+)/', '${2}', $url_tail);
+        $repolist .= " {$rep}";
         if ($rep == 'svnroot') {
-            $repobase=preg_replace('/svnroot$/','',$url_tail);
+            $repobase = preg_replace('/svnroot$/', '', $url_tail);
         }
         $resultSet->moveNext();
     }
-    $reposTable .="</table>\n</fieldset>\n";
+    $reposTable .= "</table>\n</fieldset>\n";
 }
 $pp['reposTable'] = $reposTable;
 $pp['repolist'] = $repolist;
 $pp['repobase'] = $repobase;
 $pp['twigs'] = $twigs;
-$pp['new_repos_name']= '';//$new_repos_name;
+$pp['new_repos_name'] = ''; //$new_repos_name;
 $groups = array();
 // get tutors and scribes
 $sql = "select snummer from svn_tutor_snummer\n"
         . " natural join prj_milestone where prjm_id=$prjm_id order by snummer";
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet !== false) {
-    $groups['tutor']=[];
+    $groups['tutor'] = [];
     while (!$resultSet->EOF) {
         extract($resultSet->fields);
         $groups['tutor'][] = $snummer;
@@ -157,7 +154,7 @@ $sql = "select distinct scribe as snummer \n"
         . "from project_scribe where prj_id=$prj_id and scribe not in (select userid from tutor)";
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet !== false) {
-    $groups['auditor']=[];
+    $groups['auditor'] = [];
     while (!$resultSet->EOF) {
         extract($resultSet->fields);
         $groups['auditor'][] = $snummer;
@@ -166,7 +163,7 @@ if ($resultSet !== false) {
 }
 // get students
 $sql = "select grp_name, snummer from prj_tutor \n"
-  ."left join prj_grp using (prjtg_id)  "
+        . "left join prj_grp using (prjtg_id)  "
         . " where prjm_id=$prjm_id order by grp_name,snummer";
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet !== false) {
@@ -174,38 +171,38 @@ if ($resultSet !== false) {
         extract($resultSet->fields);
         if (isSet($snummer)) {
             $groups[$grp_name][] = $snummer;
-        } else{
-            $groups[$grp_name]=[];
+        } else {
+            $groups[$grp_name] = [];
         }
         $resultSet->moveNext();
     }
 }
 $pp['grpLists'] = '';
-$all=array();
+$all = array();
 foreach ($groups as $grp => $list) {
     //echo implode(' ',$list);
     if (isSet($list) && is_array($list)) {
         $grpStr = join(',', $list);
         //$all[] = join(',',$list);
-        $all=array_merge($all,$list);
+        $all = array_merge($all, $list);
     } else {
         $grpStr = $grp;
     }
     $pp['grpLists'] .= "<span>$grp=$grpStr</span><br/>\n";
 }
-$allMembers = join(',',$all);
-$pp['grpLists'] .="<span>all={$allMembers}</span><br/>\n";
+$allMembers = join(',', $all);
+$pp['grpLists'] .= "<span>all={$allMembers}</span><br/>\n";
 $pp['afko_lc'] = strtolower($afko);
 $prjSel->setSubmitOnChange(true);
 $pp['prj_id_selector'] = $prjSel->getWidget();
 $page_opening = "Subversion repositories for project $afko: $description (prj_id: $prj_id, milestone:$milestone)";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $page->addBodyComponent($nav);
-$page->addHtmlFragment('templates/subversionrepostop.html', $pp);
+$page->addHtmlFragment('../templates/subversionrepostop.html', $pp);
 if (isSet($pp['fileeditor'])) {
     $pp['fileeditor']->getWidgetForPage($page, $pp);
 }
-$page->addHtmlFragment('templates/subversionreposbottom.html', $pp);
+$page->addHtmlFragment('../templates/subversionreposbottom.html', $pp);
 $page->show();
 

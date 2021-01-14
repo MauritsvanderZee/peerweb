@@ -4,7 +4,7 @@ requireCap(CAP_SYSTEM);
 /**
  * presents a page that allows a time record to be spilt and attaached to other projects
  */
-include_once('tutorhelper.php');
+require_once('tutorhelper.php');
 require_once('tasktimer.php');
 if ( !isSet( $startend ) ) {
   $startend = 'start';
@@ -162,7 +162,7 @@ $tail_task_sel = "<select name='tail_task' title='select second (tail) task'>" .
   <p>The length of the task record you are splitting up is <span style='color:#080;'><?= $record_length ?></span>.<br/>
     Values outside the range of the start and end time are silently ignored. To make the splitting effective (and stored), the start and end task must be different.</p>
 
-  <form name='timesplittertry' method='GET' action='<?= $PHP_SELF ?>'>
+  <form name='timesplittertry' method='GET' action='<?= basename(__FILE__) ?>'>
     <input type='hidden' name='task_timer_id' value='<?= $task_timer_id ?>'/>
     <input type='hidden' name='new_task_timer_id' value='-1'/>
     <table border='3' style='empty-cells:show;border-collapse:3d' rules='groups' frame='box' width='100%'>

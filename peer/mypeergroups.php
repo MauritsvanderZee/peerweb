@@ -1,12 +1,12 @@
 <?php
 /* $Id: mypeergroups.php 1761 2014-05-24 13:17:31Z hom $ */
 requireCap(CAP_DEFAULT);
-include_once('simplequerytable.php');
-include_once('makeinput.php');
-include_once('tutorhelper.php');
-include_once 'navigation2.php';
+require_once('simplequerytable.php');
+require_once('makeinput.php');
+require_once('tutorhelper.php');
+require_once 'navigation2.php';
 $judge = $snummer;
-$sql = "select * from student where snummer=$judge";
+$sql = "select * from student_email where snummer=$judge";
 $resultSet = $dbConn->Execute($sql);
 if ($resultSet === false) {
     print "error fetching judge data with $sql : " . $dbConn->ErrorMsg() . "<br/>\n";
@@ -17,7 +17,7 @@ if (!$resultSet->EOF)
 $page_opening = 'The groups of ' . "$judge_roepnaam $judge_tussenvoegsel $judge_achternaam ($judge_snummer)";
 $page = new PageContainer();
 $page->setTitle($page_opening);
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 
 $nav->addLeftNavText(file_get_contents('news.html'));

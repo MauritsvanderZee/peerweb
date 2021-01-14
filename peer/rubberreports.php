@@ -2,7 +2,7 @@
 requireCap(CAP_SYSTEM);
 require_once('validators.php');
 require_once('rubberstuff.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 
 $tutor_navtable=array();
 $activeRubberProject='';
@@ -14,7 +14,7 @@ $css='<style type=\'text/css\'><!--
 </style>';
 pagehead2('Rubber',$css);
 $page_opening="Rubber reports at $rubberbase";
-$nav=new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav=new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->show();
 $_SESSION['conf_editor_basedir'] = $rubberbase;
 echo "<br/>\n";

@@ -1,7 +1,7 @@
 <?php
 requireCap(CAP_EDIT_RIGHTS);
 require_once 'peerutils.php';
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'bitset.php';
 require_once 'studentpicker.php';
 $newuserid = $peer_id;
@@ -54,12 +54,12 @@ $cluster_widget .= "</table><br/>";
 
 pagehead2('Set tutor cluster assignment');
 $page_opening = "Set the class cluster(s) the tutor should see/works in.";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 
 
 echo $nav->show();
 
-include_once 'templates/tutorcluster.xhtml';
+require_once '../templates/tutorcluster.xhtml';
 ?>
 </body>
 </html>

@@ -16,7 +16,7 @@ $sql = "select substr(now()::text,1,16) as ts,rtrim(sclass) as sclass,"
 $resultSet = $dbConn->Execute($sql);
 extract($resultSet->fields);
 $classname = "$faculty_short.$sclass";
-$texdir = $site_home . '/tex/out';
+$texdir = $site_home . '/tex/photolist_out';
 $basename = sanitizeFilename('photolist_' . trim(preg_replace('/\s+/', '_', $classname)));
 $filename = $basename . '.tex';
 $pdfname = $basename . '.pdf';
@@ -54,7 +54,7 @@ fwrite($fp, "\\documentclass[10pt]{article}\n"
         . " \n"
         . "\\chead[" . $classname . "]{" . $classname . "}\n"
         . "\\rhead[" . $ts . "]{" . $ts . "}\n"
-        . "\\lhead[Student Class]{student class}\n"
+        . "\\lhead[Student Class]{Student class}\n"
         . "\\lfoot[Fontys Venlo peerweb]{Fontys Venlo peerweb}\n"
         . "\\rfoot[\\url{https://peerweb.fontysvenlo.org}]{\\url{https://www.fontysvenlo.org/peerweb}}\n"
         . "\\begin{document}\n"
@@ -64,7 +64,7 @@ fwrite($fp, "\\documentclass[10pt]{article}\n"
 
 $sql = "select snummer,roepnaam||coalesce(' '||tussenvoegsel||' ',' ')||achternaam as name,\n"
         . " photo, coalesce(tutor,'---') as slb\n"
-        . " from student "
+        . " from student_email "
         . " natural join portrait "
         . " left join tutor on(slb=userid) \n"
         . " where class_id=$class_id\n"
@@ -76,7 +76,6 @@ if ($debug) {
 if (!$resultSet->EOF) {
     fwrite($fp, "\\tablehead{" . $classname . "}\n");
 }
-$fotodir = '../../peer/';
 $colcount = 0;
 $cont = '';
 $ps1 = '';
@@ -86,8 +85,7 @@ while (!$resultSet->EOF) {
     $ps1 .= $cont
             . "\n"
             . "\\begin{minipage}{35mm}"
-            . "\\center\\includegraphics[height=40mm]{"
-            . $fotodir . $photo . "}"
+            . "\\center\\includegraphics[height=40mm]{{$fotobase}/{$photo}}"
             . "\n\\vfill\\sf{}\\textbf{{$name}}"
             //. "\\\\{$snummer} ({$slb})}"
             . "\\end{minipage}\n";

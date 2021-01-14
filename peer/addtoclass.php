@@ -2,7 +2,7 @@
 requireCap(CAP_ALTER_STUDENT_CLASS);
 require_once('peerutils.php');
 require_once('validators.php');
-include_once('navigation2.php');
+require_once('navigation2.php');
 require_once 'studentpicker.php';
 require_once 'ClassSelectorClass.php';
 $class_id = 363;
@@ -50,7 +50,7 @@ if (hasCap(CAP_ALTER_STUDENT_CLASS) && $newsnummer != 0) {
     $sql = "begin work;\n"
             . "with move_prospect as (delete from prospects where snummer={$newsnummer} returning *)\n"
             . "insert into student_email select * from move_prospect;\n"
-            . "update student set class_id={$class_id} where snummer={$newsnummer};";
+            . "update student_email set class_id={$class_id} where snummer={$newsnummer};";
     $resultSet = $dbConn->Execute($sql);
     if ($resultSet === 0) {
         $dbConn->log($dbConn->ErrorMsg());
@@ -59,7 +59,7 @@ if (hasCap(CAP_ALTER_STUDENT_CLASS) && $newsnummer != 0) {
         $dbConn->Execute("commit");
     }
 }
-$scripts = '<script type="text/javascript" src="js/jquery.js"></script>
+$scripts = '<script type="text/javascript" src="js/jquery.min.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
     <script type="text/javascript">
       $(document).ready(function() {
@@ -73,7 +73,7 @@ $scripts = '<script type="text/javascript" src="js/jquery.js"></script>
 $myClassSelector = new ClassSelectorClass($dbConn, $class_id);
 $classSelectorWidget = $myClassSelector->setAutoSubmit(true)->setSelectorName('newclass_id')->getSelector();
 $sql = "select snummer,achternaam,roepnaam,tussenvoegsel,hoofdgrp,lang \n"
-        . " from student  \n"
+        . " from student_email  \n"
         . "join student_class using(class_id)\n"
         . " where class_id={$class_id} "
         . "  order by hoofdgrp,achternaam,roepnaam";
@@ -83,10 +83,10 @@ $memberTable = simpletableString($dbConn, $sql, "<table id='myTable' class='tabl
 
 pagehead2('Add/move individual student to class.', $scripts);
 $page_opening = "Add individual student to a class. <span style='font-size:6pt;'>class_id {$class_id}</span>";
-$nav = new Navigation($tutor_navtable, basename($PHP_SELF), $page_opening);
+$nav = new Navigation($tutor_navtable, basename(__FILE__), $page_opening);
 $nav->setInterestMap($tabInterestCount);
 $nav->show();
-include_once 'templates/addtoclass.html';
+require_once '../templates/addtoclass.html';
 ?>
 <!-- db_name=<?= $db_name ?> -->
 <!-- $Id: addtoclass.php 1853 2015-07-25 14:17:12Z hom $ -->
